@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Pink Agency - Agence Digitale</title>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { font-family: 'Exo 2', sans-serif; }
+        html { scroll-behavior: smooth; }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-100px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(100px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes drawCurve {
+            to { stroke-dashoffset: 0; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+        @keyframes ping {
+            75%, 100% { transform: scale(2); opacity: 0; }
+        }
+
+        .slide-in-left, .slide-in-right { opacity: 0; }
+        .slide-in-left.animate-visible { animation: slideInLeft 0.8s ease-out forwards; }
+        .slide-in-right.animate-visible { animation: slideInRight 0.8s ease-out forwards; }
+        .animate-ping { animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; }
+
+        #constellationCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .growth-curve-line {
+            stroke-dasharray: 500;
+            stroke-dashoffset: 500;
+            animation: drawCurve 4s ease-out forwards;
+        }
+        .growth-point { opacity: 0; }
+        .growth-point-1 { animation: fadeIn 0.3s ease-out 0.5s forwards; }
+        .growth-point-2 { animation: fadeIn 0.3s ease-out 2s forwards; }
+        .growth-point-3 { animation: fadeIn 0.3s ease-out 3s forwards; }
+        .growth-point-4 { animation: fadeIn 0.3s ease-out 3.8s forwards, pulse 1s ease-in-out 4s infinite; }
+
+    </style>
+</head>
+<body class="bg-gradient-to-b from-black via-gray-900 to-black text-white overflow-x-hidden">
+    <canvas id="constellationCanvas"></canvas>
+
+    <!-- Header -->
+    <header class="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-xl border-b border-pink-500/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <img id="headerLogo" src="https://i.imgur.com/DS3yaqU.png" alt="Logo" class="h-10 sm:h-12 w-auto">
+                <div id="headerBrand" class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-pink-500 via-pink-400 to-white bg-clip-text text-transparent tracking-tight">PINK AGENCY</div>
+            </div>
+            <nav class="hidden lg:flex gap-8 items-center">
+                <a href="#home" class="hover:text-pink-400 transition-all duration-300 flex items-center gap-2" id="navLink1"></a>
+                <a href="#services" class="hover:text-pink-400 transition-all duration-300 flex items-center gap-2" id="navLink2"></a>
+                <a href="#about" class="hover:text-pink-400 transition-all duration-300 flex items-center gap-2" id="navLink3"></a>
+                <a href="#contact" class="bg-gradient-to-r from-pink-600 to-pink-500 px-6 py-2 rounded-full hover:shadow-lg hover:shadow-pink-500/50 transition-all duration-300 flex items-center gap-2" id="navCta"></a>
+            </nav>
+            <button id="menuToggle" class="lg:hidden text-white text-2xl">☰</button>
+        </div>
+        <div id="mobileMenu" class="hidden lg:hidden bg-black/95 backdrop-blur-xl border-t border-pink-500/20">
+            <div class="flex flex-col gap-4 p-6">
+                <a href="#home" class="hover:text-pink-400 transition-colors text-left flex items-center gap-2" id="mobileLink1"></a>
+                <a href="#services" class="hover:text-pink-400 transition-colors text-left flex items-center gap-2" id="mobileLink2"></a>
+                <a href="#about" class="hover:text-pink-400 transition-colors text-left flex items-center gap-2" id="mobileLink3"></a>
+                <a href="#contact" class="bg-gradient-to-r from-pink-600 to-pink-500 px-6 py-3 rounded-full text-center flex items-center justify-center gap-2" id="mobileCta"></a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="relative min-h-screen flex items-center justify-center px-4 sm:px-6 pt-20">
+        <div class="text-center max-w-5xl mx-auto" id="heroContent">
+            <div class="mb-8 slide-in-left">
+                <div class="w-32 h-32 sm:w-40 sm:h-40 mx-auto flex items-center justify-center">
+                    <img id="heroLogo" src="https://i.imgur.com/DS3yaqU.png" alt="Logo" class="w-full h-full object-contain" style="filter: drop-shadow(0 0 30px rgba(236, 72, 153, 0.5));">
+                </div>
+            </div>
+
+            <!-- Courbe animée -->
+            <div class="mb-8 slide-in-right" style="animation-delay: 0.2s;">
+                <svg viewBox="0 0 400 200" class="w-full max-w-2xl mx-auto h-48 sm:h-64">
+                    <defs>
+                        <linearGradient id="curveGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.8" />
+                            <stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#FF1493;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#FF1493;stop-opacity:0.5" />
+                            <stop offset="100%" style="stop-color:#FF1493;stop-opacity:0" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M 20 180 L 20 150 Q 100 120 150 100 T 280 50 L 380 30 L 380 180 Z" fill="url(#areaGradient)" class="growth-curve-line"/>
+                    <path d="M 20 150 Q 100 120 150 100 T 280 50 L 380 30" fill="none" stroke="url(#curveGradient)" stroke-width="4" stroke-linecap="round" class="growth-curve-line"/>
+                    <circle cx="20" cy="150" r="5" fill="#FFFFFF" class="growth-point growth-point-1"/>
+                    <circle cx="150" cy="100" r="5" fill="#FF69B4" class="growth-point growth-point-2"/>
+                    <circle cx="280" cy="50" r="5" fill="#FF69B4" class="growth-point growth-point-3"/>
+                    <circle cx="380" cy="30" r="6" fill="#FF1493" class="growth-point growth-point-4"/>
+                    <line x1="20" y1="180" x2="380" y2="180" stroke="#FF1493" stroke-width="1" opacity="0.2"/>
+                    <line x1="20" y1="135" x2="380" y2="135" stroke="#FF1493" stroke-width="1" opacity="0.1"/>
+                    <line x1="20" y1="90" x2="380" y2="90" stroke="#FF1493" stroke-width="1" opacity="0.1"/>
+                    <line x1="20" y1="45" x2="380" y2="45" stroke="#FF1493" stroke-width="1" opacity="0.1"/>
+                </svg>
+            </div>
+
+            <p id="heroDescription" class="text-lg sm:text-xl md:text-2xl text-gray-300 mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed slide-in-right px-4" style="animation-delay: 0.4s;"></p>
+
+            <div class="flex gap-4 sm:gap-6 justify-center flex-wrap px-4">
+                <a id="heroBtn1" href="#services" class="group bg-gradient-to-r from-pink-600 to-pink-500 px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold hover:shadow-2xl hover:shadow-pink-500/50 transition-all duration-300 flex items-center gap-2 slide-in-left hover:scale-110" style="animation-delay: 0.6s;"></a>
+                <a id="heroBtn2" href="#contact" class="border-2 border-pink-500 px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold hover:bg-pink-500/10 transition-all duration-300 slide-in-right hover:scale-110" style="animation-delay: 0.8s;"></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="relative z-10 py-16 sm:py-32 px-4 sm:px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="mb-16 sm:mb-20 max-w-5xl mx-auto slide-in-left">
+                <div class="relative bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-sm border border-pink-500/20 rounded-3xl p-8 sm:p-12 hover:border-pink-500/60 transition-all duration-500 hover:shadow-2xl hover:shadow-pink-500/20">
+                    <p id="servicesIntro" class="text-lg sm:text-xl md:text-2xl text-gray-300 leading-relaxed text-center italic"></p>
+                </div>
+            </div>
+
+            <div class="text-center mb-12 sm:mb-20">
+                <h2 class="text-4xl sm:text-5xl md:text-7xl font-black mb-4 sm:mb-6 slide-in-left">
+                    <span id="servicesSectionTitle" class="inline-block bg-gradient-to-r from-pink-400 to-white bg-clip-text text-transparent"></span>
+                </h2>
+                <p id="servicesSectionSubtitle" class="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto slide-in-right px-4" style="animation-delay: 0.2s;"></p>
+            </div>
+
+            <div id="servicesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"></div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="relative z-10 py-16 sm:py-32 px-4 sm:px-6 bg-black/30">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center">
+                <div class="slide-in-left max-w-4xl mx-auto">
+                    <h2 class="text-4xl sm:text-5xl md:text-7xl font-black mb-6 sm:mb-8">
+                        <span id="aboutTitle1" class="block bg-gradient-to-r from-pink-400 to-white bg-clip-text text-transparent mb-2"></span>
+                        <span id="aboutTitle2" class="block bg-gradient-to-r from-white to-pink-400 bg-clip-text text-transparent"></span>
+                    </h2>
+                    <p id="aboutPara1" class="text-lg sm:text-xl text-gray-300 leading-relaxed mb-4 sm:mb-6 slide-in-right" style="animation-delay: 0.2s;"></p>
+                    <p id="aboutPara2" class="text-lg sm:text-xl text-gray-300 leading-relaxed mb-6 sm:mb-8 slide-in-left" style="animation-delay: 0.4s;"></p>
+                    <div class="flex gap-4 justify-center flex-wrap">
+                        <div class="bg-gradient-to-br from-pink-600/20 to-pink-500/10 border border-pink-500/30 rounded-xl p-4 sm:p-6 flex-1 max-w-xs hover:scale-105 transition-transform cursor-pointer slide-in-right" style="animation-delay: 0.6s;">
+                            <div id="aboutStat1Num" class="text-3xl sm:text-5xl font-black text-pink-400 mb-2"></div>
+                            <div id="aboutStat1Label" class="text-sm sm:text-base text-gray-400"></div>
+                        </div>
+                        <div class="bg-gradient-to-br from-pink-600/20 to-pink-500/10 border border-pink-500/30 rounded-xl p-4 sm:p-6 flex-1 max-w-xs hover:scale-105 transition-transform cursor-pointer slide-in-left" style="animation-delay: 0.8s;">
+                            <div id="aboutStat2Num" class="text-3xl sm:text-5xl font-black text-pink-400 mb-2"></div>
+                            <div id="aboutStat2Label" class="text-sm sm:text-base text-gray-400"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative mt-12 slide-in-right" style="animation-delay: 1s;">
+                    <div class="relative bg-gradient-to-br from-pink-600/10 to-purple-600/10 border border-pink-500/30 rounded-3xl p-8 sm:p-12 backdrop-blur-sm max-w-2xl mx-auto">
+                        <div id="aboutBullets" class="space-y-4 sm:space-y-6"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="relative z-10 py-16 sm:py-32 px-4 sm:px-6">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl sm:text-5xl md:text-7xl font-black mb-6 sm:mb-8 slide-in-left">
+                <span id="contactTitle" class="bg-gradient-to-r from-pink-400 to-white bg-clip-text text-transparent"></span>
+            </h2>
+            <p id="contactSubtitle" class="text-lg sm:text-xl text-gray-300 mb-8 sm:mb-12 slide-in-right" style="animation-delay: 0.2s;"></p>
+
+            <div class="bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-sm border border-pink-500/20 rounded-3xl p-8 sm:p-12 slide-in-left" style="animation-delay: 0.4s;">
+                <div class="text-2xl sm:text-3xl font-bold text-pink-400 mb-4">📧 Email</div>
+                <a id="contactEmailLink" href="" class="text-lg sm:text-xl text-gray-300 hover:text-pink-400 transition-colors"></a>
+                <div class="mt-8">
+                    <a id="contactCta" href="" class="inline-block bg-gradient-to-r from-pink-600 to-pink-500 px-8 py-4 rounded-full text-lg font-semibold hover:shadow-2xl hover:shadow-pink-500/50 transition-all duration-300 hover:scale-110 slide-in-right" style="animation-delay: 0.6s;"></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="relative z-10 bg-black/50 border-t border-pink-500/20 py-8 sm:py-12 px-4 sm:px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6 sm:gap-8">
+                <div class="text-center md:text-left slide-in-left">
+                    <div class="flex items-center gap-3 justify-center md:justify-start mb-2">
+                        <img id="footerLogo" src="https://i.imgur.com/DS3yaqU.png" alt="Logo" class="h-10 w-auto">
+                        <div id="footerBrand" class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-pink-500 to-white bg-clip-text text-transparent"></div>
+                    </div>
+                    <p id="footerSlogan" class="text-sm sm:text-base text-gray-400"></p>
+                </div>
+
+                <div id="footerSocials" class="flex gap-4 sm:gap-6 slide-in-right"></div>
+            </div>
+
+            <div id="footerCopyright" class="text-center mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-pink-500/10 text-xs sm:text-sm text-gray-500 slide-in-left" style="animation-delay: 0.2s;"></div>
+        </div>
+    </footer>
+
+    <script>
+        // ======================== SVG ICON LIBRARY (same as admin) ========================
+        const SVG_ICONS = {
+            building: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><rect x="20" y="30" width="20" height="50" fill="url(#ig)" opacity="0.8"/><rect x="45" y="20" width="20" height="60" fill="url(#ig)"/><rect x="70" y="35" width="20" height="45" fill="url(#ig)" opacity="0.8"/><path d="M15 80 L85 80" stroke="url(#ig)" stroke-width="3" fill="none"/><circle cx="50" cy="10" r="3" fill="#FFFFFF"/></svg>',
+            globe: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><circle cx="50" cy="50" r="35" fill="none" stroke="url(#ig)" stroke-width="2"/><ellipse cx="50" cy="50" rx="35" ry="15" fill="none" stroke="url(#ig)" stroke-width="2"/><line x1="50" y1="15" x2="50" y2="85" stroke="url(#ig)" stroke-width="2"/><line x1="15" y1="50" x2="85" y2="50" stroke="url(#ig)" stroke-width="2"/></svg>',
+            shop: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><rect x="30" y="20" width="40" height="35" fill="none" stroke="url(#ig)" stroke-width="2.5"/><path d="M25 55 L30 20 L70 20 L75 55 Z" fill="url(#ig)" opacity="0.6"/><path d="M25 55 L30 80 L70 80 L75 55 Z" fill="url(#ig)"/></svg>',
+            chain: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><circle cx="30" cy="50" r="20" fill="none" stroke="url(#ig)" stroke-width="2.5"/><circle cx="70" cy="50" r="20" fill="none" stroke="url(#ig)" stroke-width="2.5"/></svg>',
+            education: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><path d="M50 20 L20 35 L50 50 L80 35 Z" fill="url(#ig)" opacity="0.8"/><path d="M20 35 L20 60 L50 75 L80 60 L80 35" fill="none" stroke="url(#ig)" stroke-width="2.5"/></svg>',
+            meta: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><rect x="15" y="25" width="30" height="50" rx="5" fill="none" stroke="url(#ig)" stroke-width="2.5"/><rect x="55" y="25" width="30" height="50" rx="5" fill="none" stroke="url(#ig)" stroke-width="2.5"/></svg>',
+            tiktok: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><path d="M50 20 L50 70" stroke="url(#ig)" stroke-width="3"/><circle cx="50" cy="70" r="10" fill="none" stroke="url(#ig)" stroke-width="2.5"/></svg>',
+            snapchat: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><path d="M50 20 Q70 20 70 40 Q70 55 50 60 Q30 55 30 40 Q30 20 50 20" fill="url(#ig)" opacity="0.7"/></svg>',
+            search: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><circle cx="50" cy="50" r="30" fill="none" stroke="url(#ig)" stroke-width="2.5"/><path d="M65 35 L75 25" stroke="url(#ig)" stroke-width="3" stroke-linecap="round"/></svg>',
+            pin: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><circle cx="50" cy="35" r="10" fill="none" stroke="url(#ig)" stroke-width="2.5"/><path d="M50 45 L50 75" stroke="url(#ig)" stroke-width="2.5"/></svg>',
+            logo: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><circle cx="50" cy="50" r="30" fill="none" stroke="url(#ig)" stroke-width="2.5"/><path d="M35 40 L50 30 L65 40" fill="none" stroke="url(#ig)" stroke-width="2.5"/></svg>',
+            flyer: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><rect x="25" y="20" width="50" height="60" rx="3" fill="none" stroke="url(#ig)" stroke-width="2.5"/><path d="M35 35 L65 35" stroke="url(#ig)" stroke-width="2"/></svg>',
+            star: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><path d="M50 15 L58 40 L85 40 L63 55 L72 80 L50 65 L28 80 L37 55 L15 40 L42 40 Z" fill="url(#ig)" opacity="0.8"/></svg>',
+            rocket: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><path d="M50 15 Q65 30 65 55 L50 70 L35 55 Q35 30 50 15 Z" fill="url(#ig)" opacity="0.8"/><circle cx="50" cy="40" r="5" fill="#FFF" opacity="0.8"/><path d="M35 55 L25 65 L35 60" fill="url(#ig)" opacity="0.6"/><path d="M65 55 L75 65 L65 60" fill="url(#ig)" opacity="0.6"/></svg>',
+            heart: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><path d="M50 80 Q20 55 20 35 Q20 20 35 20 Q50 20 50 35 Q50 20 65 20 Q80 20 80 35 Q80 55 50 80 Z" fill="url(#ig)" opacity="0.8"/></svg>',
+            chart: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><rect x="15" y="55" width="15" height="25" fill="url(#ig)" opacity="0.6"/><rect x="35" y="40" width="15" height="40" fill="url(#ig)" opacity="0.8"/><rect x="55" y="25" width="15" height="55" fill="url(#ig)"/><rect x="75" y="15" width="15" height="65" fill="url(#ig)" opacity="0.9"/><line x1="10" y1="80" x2="95" y2="80" stroke="url(#ig)" stroke-width="2"/></svg>'
+        };
+
+        // ======================== LOAD CONFIG ========================
+        function loadConfig() {
+            // Check URL hash for config from admin panel (Firefox file:// fix)
+            if (location.hash.startsWith('#pinkconfig=')) {
+                try {
+                    const encoded = location.hash.slice('#pinkconfig='.length);
+                    const configObj = JSON.parse(decodeURIComponent(encoded));
+                    localStorage.setItem('pinkAgencyConfig', JSON.stringify(configObj));
+                    history.replaceState(null, '', location.pathname);
+                    return configObj;
+                } catch(e) { console.error('Config hash parse error', e); }
+            }
+            const saved = localStorage.getItem('pinkAgencyConfig');
+            return saved ? JSON.parse(saved) : null;
+        }
+
+        function getServiceIcon(svc) {
+            if (svc.iconType === 'svg') return SVG_ICONS[svc.iconData] || SVG_ICONS.star;
+            if (svc.iconType === 'image') return `<img src="${svc.iconData}" class="w-16 h-16 sm:w-20 sm:h-20 object-contain">`;
+            if (svc.iconType === 'emoji') return `<span class="text-5xl sm:text-6xl">${svc.iconData}</span>`;
+            if (svc.iconType === 'custom_svg') return svc.iconData;
+            return SVG_ICONS.star;
+        }
+
+        function isImageUrl(val) { return val && (val.startsWith('http://') || val.startsWith('https://') || val.startsWith('data:')); }
+        function setNavLink(elId, icon, text) {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            el.innerHTML = '';
+            if (icon && isImageUrl(icon)) {
+                const img = document.createElement('img');
+                img.src = icon; img.alt = ''; img.className = 'w-5 h-5 object-contain inline-block';
+                el.appendChild(img);
+                el.appendChild(document.createTextNode(' ' + text));
+            } else {
+                el.textContent = (icon ? icon + ' ' : '') + text;
+            }
+        }
+        function renderSocialIcon(icon) {
+            if (icon && isImageUrl(icon)) return `<img src="${icon}" alt="" class="w-5 h-5 object-contain">`;
+            return icon || '';
+        }
+
+        function applyConfig() {
+            const cfg = loadConfig();
+            if (!cfg) return;
+
+            // SEO
+            if (cfg.seo?.title) document.getElementById('pageTitle').textContent = cfg.seo.title;
+
+            // General / Header
+            const g = cfg.general;
+            if (g) {
+                if (g.logoUrl) {
+                    document.getElementById('headerLogo').src = g.logoUrl;
+                    document.getElementById('heroLogo').src = g.logoUrl;
+                    document.getElementById('footerLogo').src = g.logoUrl;
+                }
+                if (g.brandName) {
+                    document.getElementById('headerBrand').textContent = g.brandName;
+                    document.getElementById('footerBrand').textContent = g.brandName;
+                }
+                const n1i = g.nav1Icon || '🏠', n2i = g.nav2Icon || '💼', n3i = g.nav3Icon || '👥', nci = g.navCtaIcon || '💬';
+                setNavLink('navLink1', n1i, g.nav1 || 'Accueil');
+                setNavLink('navLink2', n2i, g.nav2 || 'Nos Services');
+                setNavLink('navLink3', n3i, g.nav3 || 'Qui sommes-nous');
+                setNavLink('navCta', nci, g.navCta || 'Contactez-nous');
+                setNavLink('mobileLink1', n1i, g.nav1 || 'Accueil');
+                setNavLink('mobileLink2', n2i, g.nav2 || 'Nos Services');
+                setNavLink('mobileLink3', n3i, g.nav3 || 'Qui sommes-nous');
+                setNavLink('mobileCta', nci, g.navCta || 'Contactez-nous');
+            }
+
+            // Hero
+            const h = cfg.hero;
+            if (h) {
+                document.getElementById('heroDescription').textContent = h.description || '';
+                const btn1 = document.getElementById('heroBtn1');
+                const btn2 = document.getElementById('heroBtn2');
+                btn1.textContent = h.btn1Text || 'Découvrir nos services →';
+                btn1.href = h.btn1Link || '#services';
+                btn2.textContent = h.btn2Text || 'Nous contacter';
+                btn2.href = h.btn2Link || '#contact';
+            }
+
+            // Services
+            const s = cfg.services;
+            if (s) {
+                document.getElementById('servicesIntro').innerHTML = s.introText || '';
+                document.getElementById('servicesSectionTitle').innerHTML = s.sectionTitle || 'Nos Services';
+                document.getElementById('servicesSectionSubtitle').innerHTML = s.sectionSubtitle || '';
+
+                const grid = document.getElementById('servicesGrid');
+                grid.innerHTML = '';
+                if (s.items && s.items.length) {
+                    s.items.forEach((svc, i) => {
+                        const div = document.createElement('div');
+                        div.className = 'group relative bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-sm border border-pink-500/20 rounded-2xl p-6 sm:p-8 hover:border-pink-500/60 transition-all duration-500 hover:shadow-2xl hover:shadow-pink-500/20 hover:-translate-y-3 cursor-pointer slide-in-right overflow-hidden';
+                        div.style.animationDelay = `${i * 0.1}s`;
+                        const bgOpVal = svc.bgOpacity !== undefined ? svc.bgOpacity : 0.15;
+                        const bgBlurVal = svc.bgBlur || 0;
+                        const bgHtml = svc.bgImage ? `<img src="${svc.bgImage}" alt="" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;border-radius:1rem;pointer-events:none;opacity:${bgOpVal};filter:blur(${bgBlurVal}px);z-index:1;" onerror="console.error('BG IMG LOAD FAIL:', this.src)">` : '';
+                        div.innerHTML = `${bgHtml}<div style="position:relative;z-index:2;"><div class="mb-4 flex justify-center group-hover:scale-125 group-hover:rotate-12 transition-all duration-500">${getServiceIcon(svc)}</div><h3 class="text-xl sm:text-2xl font-bold mb-3 text-white group-hover:text-pink-300 transition-colors">${svc.title}</h3><p class="text-sm sm:text-base text-gray-400 leading-relaxed">${svc.description}</p></div><div class="absolute inset-0 bg-gradient-to-r from-pink-500/0 via-pink-500/10 to-pink-500/0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" style="z-index:3;"></div>`;
+                        grid.appendChild(div);
+                    });
+                }
+            }
+
+            // About
+            const a = cfg.about;
+            if (a) {
+                document.getElementById('aboutTitle1').textContent = a.title1 || 'Qui';
+                document.getElementById('aboutTitle2').textContent = a.title2 || 'sommes-nous ?';
+                document.getElementById('aboutPara1').innerHTML = a.para1 || '';
+                document.getElementById('aboutPara2').innerHTML = a.para2 || '';
+                document.getElementById('aboutStat1Num').textContent = a.stat1Num || '100+';
+                document.getElementById('aboutStat1Label').textContent = a.stat1Label || 'Projets réalisés';
+                document.getElementById('aboutStat2Num').textContent = a.stat2Num || '24/7';
+                document.getElementById('aboutStat2Label').textContent = a.stat2Label || 'Support disponible';
+
+                const bulletsContainer = document.getElementById('aboutBullets');
+                bulletsContainer.innerHTML = '';
+                (a.bullets || []).forEach(b => {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center justify-center gap-4';
+                    div.innerHTML = `<div class="w-3 h-3 bg-pink-500 rounded-full animate-ping"></div><span class="text-base sm:text-lg hover:text-pink-400 transition-colors cursor-pointer">${b}</span>`;
+                    bulletsContainer.appendChild(div);
+                });
+            }
+
+            // Contact
+            const c = cfg.contact;
+            if (c) {
+                document.getElementById('contactTitle').textContent = c.title || 'Contactez-nous';
+                document.getElementById('contactSubtitle').textContent = c.subtitle || '';
+                const email = c.email || 'contact@pinks-agency.fr';
+                document.getElementById('contactEmailLink').textContent = email;
+                document.getElementById('contactEmailLink').href = 'mailto:' + email;
+                document.getElementById('contactCta').textContent = c.btnText || 'Demander un devis gratuit';
+                document.getElementById('contactCta').href = 'mailto:' + email;
+            }
+
+            // Footer
+            const f = cfg.footer;
+            if (f) {
+                document.getElementById('footerSlogan').textContent = f.slogan || '';
+                document.getElementById('footerCopyright').textContent = f.copyright || '';
+
+                const socials = document.getElementById('footerSocials');
+                socials.innerHTML = '';
+                const socialClass = 'bg-gradient-to-br from-pink-600/20 to-pink-500/10 border border-pink-500/30 p-3 sm:p-4 rounded-full hover:bg-pink-500/20 hover:border-pink-500/60 transition-all duration-300 hover:scale-125 hover:rotate-12';
+                if (f.instagram) socials.innerHTML += `<a href="${f.instagram}" target="_blank" class="${socialClass} flex items-center justify-center">${renderSocialIcon(f.instagramIcon || '📷')}</a>`;
+                if (f.linkedin) socials.innerHTML += `<a href="${f.linkedin}" target="_blank" class="${socialClass} flex items-center justify-center">${renderSocialIcon(f.linkedinIcon || '💼')}</a>`;
+                if (f.tiktok) socials.innerHTML += `<a href="${f.tiktok}" target="_blank" class="${socialClass} flex items-center justify-center">${renderSocialIcon(f.tiktokIcon || '🎵')}</a>`;
+                const email = cfg.contact?.email || 'contact@pinks-agency.fr';
+                socials.innerHTML += `<a href="mailto:${email}" class="${socialClass} flex items-center justify-center">${renderSocialIcon(f.emailIcon || '✉️')}</a>`;
+            }
+
+            // Re-observe new elements for scroll animations
+            setTimeout(() => {
+                const observer2 = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) entry.target.classList.add('animate-visible');
+                    });
+                }, {threshold: 0.1, rootMargin: '0px 0px -50px 0px'});
+                document.querySelectorAll('.slide-in-left:not(.animate-visible), .slide-in-right:not(.animate-visible)').forEach(el => observer2.observe(el));
+            }, 100);
+        }
+
+        // ======================== DEFAULTS (no config saved yet) ========================
+        function applyDefaults() {
+            document.getElementById('headerBrand').textContent = 'PINK AGENCY';
+            document.getElementById('footerBrand').textContent = 'PINK AGENCY';
+            setNavLink('navLink1', '🏠', 'Accueil');
+            setNavLink('navLink2', '💼', 'Nos Services');
+            setNavLink('navLink3', '👥', 'Qui sommes-nous');
+            setNavLink('navCta', '💬', 'Contactez-nous');
+            setNavLink('mobileLink1', '🏠', 'Accueil');
+            setNavLink('mobileLink2', '💼', 'Nos Services');
+            setNavLink('mobileLink3', '👥', 'Qui sommes-nous');
+            setNavLink('mobileCta', '💬', 'Contactez-nous');
+            document.getElementById('heroDescription').textContent = 'Votre partenaire digital pour propulser votre business vers de nouveaux sommets. Création, publicité, design — nous transformons vos idées en succès 🚀';
+            document.getElementById('heroBtn1').textContent = 'Découvrir nos services →';
+            document.getElementById('heroBtn2').textContent = 'Nous contacter';
+            document.getElementById('servicesIntro').innerHTML = 'Pink Agency est l\'agence digitale qui comprend vos enjeux. <span class="font-bold bg-gradient-to-r from-white via-pink-300 to-pink-400 bg-clip-text text-transparent">Plus de visibilité, plus de clients, plus de résultats.</span> Entrepreneurs et entreprises, arrêtez de passer inaperçu : nous créons votre présence digitale de A à Z. Site web professionnel, campagnes publicitaires rentables (Facebook, Instagram, TikTok, Google), Logo, Flyers, Créations Vidéo, Boutique en ligne (Shopify, Wordpress), Fournisseur, Structure d\'entreprise (LLC USA, LLC HK) pour plus d\'anonymat, formation e-commerce... Notre expertise au service de votre succès. Plus de ventes, plus de croissance. <span class="font-bold bg-gradient-to-r from-white via-pink-300 to-pink-400 bg-clip-text text-transparent">Votre transformation commence maintenant.</span>';
+            document.getElementById('servicesSectionTitle').textContent = 'Nos Services';
+            document.getElementById('servicesSectionSubtitle').innerHTML = 'Des solutions complètes pour développer votre présence digitale et faire <span class="text-pink-400 font-bold">exploser</span> vos ventes';
+
+            // Default services
+            const defaultServices = [
+                {title: "Création de LLC", description: "Accompagnement complet pour la création de votre société LLC aux États-Unis et à Hong Kong.", iconType: "svg", iconData: "building"},
+                {title: "Site Vitrine", description: "Conception de sites web modernes et élégants pour présenter votre entreprise.", iconType: "svg", iconData: "globe"},
+                {title: "Boutique Shopify", description: "Création de votre boutique en ligne sur Shopify, optimisée pour la conversion.", iconType: "svg", iconData: "shop"},
+                {title: "Agent Chine E-commerce", description: "Mise en relation avec des agents fiables en Chine pour le sourcing de produits.", iconType: "svg", iconData: "chain"},
+                {title: "Formation E-commerce", description: "Formation complète de A à Z pour créer et lancer votre boutique en ligne.", iconType: "svg", iconData: "education"},
+                {title: "Publicité Meta", description: "Campagnes publicitaires performantes sur Facebook et Instagram.", iconType: "svg", iconData: "meta"},
+                {title: "Publicité TikTok", description: "Stratégies publicitaires innovantes sur TikTok.", iconType: "svg", iconData: "tiktok"},
+                {title: "Publicité Snapchat", description: "Campagnes ciblées sur Snapchat.", iconType: "svg", iconData: "snapchat"},
+                {title: "Google Ads", description: "Gestion de campagnes Google Ads.", iconType: "svg", iconData: "search"},
+                {title: "Pinterest Ads", description: "Publicités Pinterest optimisées.", iconType: "svg", iconData: "pin"},
+                {title: "Création de Logo", description: "Design de logos uniques et mémorables.", iconType: "svg", iconData: "logo"},
+                {title: "Design de Flyers", description: "Création de flyers professionnels et impactants.", iconType: "svg", iconData: "flyer"}
+            ];
+
+            const grid = document.getElementById('servicesGrid');
+            grid.innerHTML = '';
+            defaultServices.forEach((svc, i) => {
+                const div = document.createElement('div');
+                div.className = 'group relative bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-sm border border-pink-500/20 rounded-2xl p-6 sm:p-8 hover:border-pink-500/60 transition-all duration-500 hover:shadow-2xl hover:shadow-pink-500/20 hover:-translate-y-3 cursor-pointer slide-in-right';
+                div.style.animationDelay = `${i * 0.1}s`;
+                div.innerHTML = `<div class="mb-4 flex justify-center group-hover:scale-125 group-hover:rotate-12 transition-all duration-500">${getServiceIcon(svc)}</div><h3 class="text-xl sm:text-2xl font-bold mb-3 text-white group-hover:text-pink-300 transition-colors">${svc.title}</h3><p class="text-sm sm:text-base text-gray-400 leading-relaxed">${svc.description}</p><div class="absolute inset-0 bg-gradient-to-r from-pink-500/0 via-pink-500/10 to-pink-500/0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>`;
+                grid.appendChild(div);
+            });
+
+            document.getElementById('aboutTitle1').textContent = 'Qui';
+            document.getElementById('aboutTitle2').textContent = 'sommes-nous ?';
+            document.getElementById('aboutPara1').innerHTML = 'Nous sommes une <span class="text-pink-400 font-bold">agence digitale nouvelle génération</span>, spécialisée dans la création d\'entreprises, le développement web et le marketing digital multi-plateformes.';
+            document.getElementById('aboutPara2').innerHTML = 'Notre mission : vous accompagner de <span class="text-pink-400 font-bold">A à Z</span> dans votre transformation digitale avec des solutions innovantes, créatives et performantes qui génèrent des résultats <span class="text-pink-400 font-bold">concrets</span>.';
+            document.getElementById('aboutStat1Num').textContent = '100+';
+            document.getElementById('aboutStat1Label').textContent = 'Projets réalisés';
+            document.getElementById('aboutStat2Num').textContent = '24/7';
+            document.getElementById('aboutStat2Label').textContent = 'Support disponible';
+
+            const bulletsContainer = document.getElementById('aboutBullets');
+            ['Expertise multi-plateformes', 'Stratégies sur-mesure', 'ROI maximisé', 'Design premium', 'Support dédié'].forEach(b => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-center gap-4';
+                div.innerHTML = `<div class="w-3 h-3 bg-pink-500 rounded-full animate-ping"></div><span class="text-base sm:text-lg hover:text-pink-400 transition-colors cursor-pointer">${b}</span>`;
+                bulletsContainer.appendChild(div);
+            });
+
+            document.getElementById('contactTitle').textContent = 'Contactez-nous';
+            document.getElementById('contactSubtitle').textContent = 'Prêt à propulser votre business ? Discutons de votre projet !';
+            document.getElementById('contactEmailLink').textContent = 'contact@pinks-agency.fr';
+            document.getElementById('contactEmailLink').href = 'mailto:contact@pinks-agency.fr';
+            document.getElementById('contactCta').textContent = 'Demander un devis gratuit';
+            document.getElementById('contactCta').href = 'mailto:contact@pinks-agency.fr';
+            document.getElementById('footerSlogan').textContent = 'Votre succès digital commence ici';
+            document.getElementById('footerCopyright').textContent = '© 2026 Pink Agency. Tous droits réservés.';
+
+            const socials = document.getElementById('footerSocials');
+            const sc = 'bg-gradient-to-br from-pink-600/20 to-pink-500/10 border border-pink-500/30 p-3 sm:p-4 rounded-full hover:bg-pink-500/20 hover:border-pink-500/60 transition-all duration-300 hover:scale-125 hover:rotate-12';
+            socials.innerHTML = `<a href="https://instagram.com" target="_blank" class="${sc} flex items-center justify-center">${renderSocialIcon('📷')}</a><a href="https://linkedin.com" target="_blank" class="${sc} flex items-center justify-center">${renderSocialIcon('💼')}</a><a href="mailto:contact@pinks-agency.fr" class="${sc} flex items-center justify-center">${renderSocialIcon('✉️')}</a>`;
+        }
+
+        // ======================== INIT ========================
+        const cfg = loadConfig();
+        if (cfg) {
+            applyConfig();
+        } else {
+            applyDefaults();
+        }
+
+        // Menu mobile
+        const menuToggle = document.getElementById('menuToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            menuToggle.textContent = mobileMenu.classList.contains('hidden') ? '☰' : '✕';
+        });
+        document.querySelectorAll('#mobileMenu a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+                menuToggle.textContent = '☰';
+            });
+        });
+
+        // Scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('animate-visible');
+            });
+        }, {threshold: 0.1, rootMargin: '0px 0px -50px 0px'});
+        document.querySelectorAll('.slide-in-left, .slide-in-right').forEach(el => observer.observe(el));
+
+        // Parallax
+        window.addEventListener('scroll', () => {
+            const hero = document.getElementById('heroContent');
+            const scrollY = window.scrollY;
+            if (hero) {
+                hero.style.transform = `translateY(${scrollY * 0.3}px)`;
+                hero.style.opacity = 1 - scrollY / 600;
+            }
+        });
+
+        // Canvas constellation
+        const canvas = document.getElementById('constellationCanvas');
+        const ctx = canvas.getContext('2d');
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const stars = [];
+        for (let i = 0; i < 120; i++) {
+            stars.push({x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 1.5, opacity: Math.random()});
+        }
+
+        const shootingStars = [];
+        function createShootingStar() {
+            shootingStars.push({x: Math.random() * canvas.width, y: Math.random() * canvas.height / 2, dx: Math.random() * 3 + 1.5, dy: Math.random() * 3 + 1.5, length: Math.random() * 80 + 20, opacity: 1});
+        }
+        for (let i = 0; i < 3; i++) createShootingStar();
+
+        function connectStars() {
+            for (let i = 0; i < stars.length; i++) {
+                for (let j = i + 1; j < stars.length; j++) {
+                    const dx = stars[i].x - stars[j].x;
+                    const dy = stars[i].y - stars[j].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance < 150) {
+                        ctx.strokeStyle = `rgba(255, 20, 147, ${0.1 * (1 - distance / 150)})`;
+                        ctx.lineWidth = 0.5;
+                        ctx.beginPath();
+                        ctx.moveTo(stars[i].x, stars[i].y);
+                        ctx.lineTo(stars[j].x, stars[j].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(10, 10, 15, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            stars.forEach(star => {
+                star.opacity += (Math.random() - 0.5) * 0.1;
+                star.opacity = Math.max(0.1, Math.min(1, star.opacity));
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 105, 180, ${star.opacity})`;
+                ctx.fill();
+            });
+            connectStars();
+            shootingStars.forEach((star, index) => {
+                ctx.beginPath();
+                ctx.moveTo(star.x, star.y);
+                ctx.lineTo(star.x - star.dx * star.length, star.y - star.dy * star.length);
+                ctx.strokeStyle = `rgba(255, 20, 147, ${star.opacity})`;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                star.x += star.dx;
+                star.y += star.dy;
+                star.opacity -= 0.01;
+                if (star.opacity <= 0 || star.x > canvas.width || star.y > canvas.height) {
+                    shootingStars.splice(index, 1);
+                    setTimeout(createShootingStar, Math.random() * 3000);
+                }
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+</html>

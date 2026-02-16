@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pink Agency - Panel Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { font-family: 'Exo 2', sans-serif; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1a2e; }
+        ::-webkit-scrollbar-thumb { background: #ec4899; border-radius: 4px; }
+        .tab-active { background: linear-gradient(135deg, #ec4899, #be185d); color: white; }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .field-group { transition: all 0.3s; }
+        .field-group:hover { border-color: rgba(236, 72, 153, 0.5); }
+        .preview-img { max-width: 120px; max-height: 80px; object-fit: contain; }
+        .toast { animation: slideToast 0.4s ease-out; }
+        @keyframes slideToast { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        textarea { resize: vertical; }
+        .login-bg { background: radial-gradient(ellipse at center, rgba(236,72,153,0.15) 0%, transparent 70%); }
+    </style>
+</head>
+<body class="bg-gray-950 text-white min-h-screen">
+    <!-- Toast container -->
+    <div id="toastContainer" class="fixed top-4 right-4 z-[100] flex flex-col gap-2"></div>
+
+    <!-- ======================== LOGIN SCREEN ======================== -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center login-bg">
+        <div class="bg-gray-900/80 border border-pink-500/30 rounded-2xl p-8 sm:p-12 w-full max-w-md backdrop-blur-xl">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-gradient-to-br from-pink-500 to-pink-700 rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-4">PA</div>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-pink-400 to-white bg-clip-text text-transparent">Panel Admin</h1>
+                <p class="text-sm text-gray-400 mt-2">Connectez-vous pour acceder au panneau</p>
+            </div>
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Identifiant</label>
+                    <input type="text" id="loginUser" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm focus:border-pink-500 focus:outline-none transition-colors" placeholder="Identifiant" autocomplete="username">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-400 mb-1">Mot de passe</label>
+                    <input type="password" id="loginPass" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm focus:border-pink-500 focus:outline-none transition-colors" placeholder="Mot de passe" autocomplete="current-password">
+                </div>
+                <div id="loginError" class="text-red-400 text-sm hidden">Identifiant ou mot de passe incorrect</div>
+                <button type="submit" class="w-full py-3 bg-gradient-to-r from-pink-600 to-pink-500 rounded-lg font-semibold hover:shadow-lg hover:shadow-pink-500/30 transition-all">Se connecter</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ======================== ADMIN PANEL (hidden until login) ======================== -->
+    <div id="adminPanel" class="hidden">
+        <!-- Header -->
+        <header class="bg-black/80 backdrop-blur-xl border-b border-pink-500/30 sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-pink-500 to-pink-700 rounded-lg flex items-center justify-center text-sm font-bold">PA</div>
+                    <h1 class="text-xl font-bold bg-gradient-to-r from-pink-400 to-white bg-clip-text text-transparent">Panel Admin</h1>
+                </div>
+                <div class="flex items-center gap-3 flex-wrap">
+                    <button onclick="resetAll()" class="px-4 py-2 text-sm border border-red-500/30 text-red-400 rounded-lg hover:bg-red-500/10 transition-all">Reset tout</button>
+                    <button onclick="exportConfig()" class="px-4 py-2 text-sm border border-pink-500/30 text-pink-400 rounded-lg hover:bg-pink-500/10 transition-all">Exporter JSON</button>
+                    <button onclick="document.getElementById('importInput').click()" class="px-4 py-2 text-sm border border-pink-500/30 text-pink-400 rounded-lg hover:bg-pink-500/10 transition-all">Importer JSON</button>
+                    <input type="file" id="importInput" accept=".json" class="hidden" onchange="importConfig(event)">
+                    <button onclick="saveAll()" class="px-6 py-2 text-sm bg-gradient-to-r from-pink-600 to-pink-500 rounded-lg hover:shadow-lg hover:shadow-pink-500/30 transition-all font-semibold">Sauvegarder</button>
+                    <button onclick="saveAndView()" class="px-5 py-2 text-sm bg-gradient-to-r from-green-600 to-green-500 rounded-lg hover:shadow-lg hover:shadow-green-500/30 transition-all font-semibold">Sauvegarder & Voir le site</button>
+                    <button onclick="logout()" class="px-4 py-2 text-sm border border-gray-600 text-gray-400 rounded-lg hover:bg-gray-700/30 transition-all">Deconnexion</button>
+                </div>
+            </div>
+        </header>
+
+        <div class="max-w-7xl mx-auto px-4 py-6 flex gap-6">
+            <!-- Sidebar Tabs -->
+            <nav class="w-56 flex-shrink-0">
+                <div class="sticky top-20 space-y-1">
+                    <button onclick="switchTab('general')" class="tab-btn w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-pink-500/10 tab-active" data-tab="general">General / Header</button>
+                    <button onclick="switchTab('hero')" class="tab-btn w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-pink-500/10 text-gray-400" data-tab="hero">Section Hero</button>
+                    <button onclick="switchTab('services')" class="tab-btn w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-pink-500/10 text-gray-400" data-tab="services">Services</button>
+                    <button onclick="switchTab('about')" class="tab-btn w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-pink-500/10 text-gray-400" data-tab="about">Qui sommes-nous</button>
+                    <button onclick="switchTab('contact')" class="tab-btn w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-pink-500/10 text-gray-400" data-tab="contact">Contact</button>
+                    <button onclick="switchTab('footer')" class="tab-btn w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-pink-500/10 text-gray-400" data-tab="footer">Footer</button>
+                    <button onclick="switchTab('seo')" class="tab-btn w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-pink-500/10 text-gray-400" data-tab="seo">SEO / Meta</button>
+                    <div class="border-t border-gray-800 my-3"></div>
+                    <button onclick="switchTab('account')" class="tab-btn w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-pink-500/10 text-gray-400" data-tab="account">Compte Admin</button>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="flex-1 min-w-0">
+
+                <!-- GENERAL / HEADER TAB -->
+                <div id="tab-general" class="tab-content fade-in">
+                    <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-pink-400 to-white bg-clip-text text-transparent">General / Header</h2>
+                    <div class="space-y-6">
+                        <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-pink-400 mb-4">Logo</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm text-gray-400 mb-1">URL du logo</label>
+                                    <div class="flex gap-3">
+                                        <input type="text" id="gen_logoUrl" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none transition-colors" placeholder="https://...">
+                                        <label class="px-4 py-2 bg-pink-600/20 border border-pink-500/30 rounded-lg text-sm text-pink-400 cursor-pointer hover:bg-pink-600/30 transition-all flex items-center gap-2">
+                                            Upload
+                                            <input type="file" accept="image/*" class="hidden" onchange="handleImageUpload(event, 'gen_logoUrl', 'gen_logoPreview')">
+                                        </label>
+                                    </div>
+                                    <div class="mt-3" id="gen_logoPreview"></div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-400 mb-1">Nom de l'agence</label>
+                                    <input type="text" id="gen_brandName" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none transition-colors" placeholder="PINK AGENCY">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-pink-400 mb-4">Navigation</h3>
+                            <p class="text-xs text-gray-500 mb-4">Icone = emoji, URL d'image, ou upload depuis votre PC. Laissez vide pour aucune icone.</p>
+                            <div class="space-y-5">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm text-gray-400 mb-1">Lien 1 - Icone</label>
+                                        <div class="flex gap-2 items-center">
+                                            <input type="text" id="gen_nav1Icon" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="Emoji ou URL image" oninput="updateNavIconPreview('nav1')">
+                                            <label class="px-3 py-2 bg-pink-600/20 border border-pink-500/30 rounded-lg text-xs text-pink-400 cursor-pointer hover:bg-pink-600/30 transition-all whitespace-nowrap">Upload<input type="file" accept="image/*" class="hidden" onchange="handleNavIconUpload(event,'nav1')"></label>
+                                            <div id="gen_nav1Icon_preview" class="w-9 h-9 flex items-center justify-center bg-gray-800 rounded-lg border border-gray-700 flex-shrink-0"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm text-gray-400 mb-1">Lien 1 - Texte</label>
+                                        <input type="text" id="gen_nav1" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="Accueil">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm text-gray-400 mb-1">Lien 2 - Icone</label>
+                                        <div class="flex gap-2 items-center">
+                                            <input type="text" id="gen_nav2Icon" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="Emoji ou URL image" oninput="updateNavIconPreview('nav2')">
+                                            <label class="px-3 py-2 bg-pink-600/20 border border-pink-500/30 rounded-lg text-xs text-pink-400 cursor-pointer hover:bg-pink-600/30 transition-all whitespace-nowrap">Upload<input type="file" accept="image/*" class="hidden" onchange="handleNavIconUpload(event,'nav2')"></label>
+                                            <div id="gen_nav2Icon_preview" class="w-9 h-9 flex items-center justify-center bg-gray-800 rounded-lg border border-gray-700 flex-shrink-0"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm text-gray-400 mb-1">Lien 2 - Texte</label>
+                                        <input type="text" id="gen_nav2" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="Nos Services">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm text-gray-400 mb-1">Lien 3 - Icone</label>
+                                        <div class="flex gap-2 items-center">
+                                            <input type="text" id="gen_nav3Icon" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="Emoji ou URL image" oninput="updateNavIconPreview('nav3')">
+                                            <label class="px-3 py-2 bg-pink-600/20 border border-pink-500/30 rounded-lg text-xs text-pink-400 cursor-pointer hover:bg-pink-600/30 transition-all whitespace-nowrap">Upload<input type="file" accept="image/*" class="hidden" onchange="handleNavIconUpload(event,'nav3')"></label>
+                                            <div id="gen_nav3Icon_preview" class="w-9 h-9 flex items-center justify-center bg-gray-800 rounded-lg border border-gray-700 flex-shrink-0"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm text-gray-400 mb-1">Lien 3 - Texte</label>
+                                        <input type="text" id="gen_nav3" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="Qui sommes-nous">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm text-gray-400 mb-1">CTA - Icone</label>
+                                        <div class="flex gap-2 items-center">
+                                            <input type="text" id="gen_navCtaIcon" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="Emoji ou URL image" oninput="updateNavIconPreview('navCta')">
+                                            <label class="px-3 py-2 bg-pink-600/20 border border-pink-500/30 rounded-lg text-xs text-pink-400 cursor-pointer hover:bg-pink-600/30 transition-all whitespace-nowrap">Upload<input type="file" accept="image/*" class="hidden" onchange="handleNavIconUpload(event,'navCta')"></label>
+                                            <div id="gen_navCtaIcon_preview" class="w-9 h-9 flex items-center justify-center bg-gray-800 rounded-lg border border-gray-700 flex-shrink-0"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm text-gray-400 mb-1">Bouton CTA - Texte</label>
+                                        <input type="text" id="gen_navCta" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="Contactez-nous">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HERO TAB -->
+                <div id="tab-hero" class="tab-content hidden fade-in">
+                    <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-pink-400 to-white bg-clip-text text-transparent">Section Hero</h2>
+                    <div class="space-y-6">
+                        <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-pink-400 mb-4">Texte principal</h3>
+                            <div><label class="block text-sm text-gray-400 mb-1">Description sous la courbe</label>
+                            <textarea id="hero_description" rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none transition-colors" placeholder="Votre partenaire digital..."></textarea></div>
+                        </div>
+                        <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-pink-400 mb-4">Boutons</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div><label class="block text-sm text-gray-400 mb-1">Bouton principal - Texte</label><input type="text" id="hero_btn1Text" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></div>
+                                <div><label class="block text-sm text-gray-400 mb-1">Bouton principal - Lien</label><input type="text" id="hero_btn1Link" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="#services"></div>
+                                <div><label class="block text-sm text-gray-400 mb-1">Bouton secondaire - Texte</label><input type="text" id="hero_btn2Text" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></div>
+                                <div><label class="block text-sm text-gray-400 mb-1">Bouton secondaire - Lien</label><input type="text" id="hero_btn2Link" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="#contact"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SERVICES TAB -->
+                <div id="tab-services" class="tab-content hidden fade-in">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold bg-gradient-to-r from-pink-400 to-white bg-clip-text text-transparent">Services</h2>
+                        <button onclick="addService()" class="px-4 py-2 bg-gradient-to-r from-pink-600 to-pink-500 rounded-lg text-sm font-semibold hover:shadow-lg hover:shadow-pink-500/30 transition-all">+ Ajouter un service</button>
+                    </div>
+                    <div class="space-y-6">
+                        <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-pink-400 mb-4">Texte de presentation</h3>
+                            <textarea id="svc_introText" rows="4" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none transition-colors"></textarea>
+                        </div>
+                        <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-pink-400 mb-2">Titre de la section</h3>
+                            <input type="text" id="svc_sectionTitle" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none">
+                            <label class="block text-sm text-gray-400 mt-3 mb-1">Sous-titre</label>
+                            <input type="text" id="svc_sectionSubtitle" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none">
+                        </div>
+                    </div>
+                    <div id="servicesList" class="space-y-4 mt-6"></div>
+                </div>
+
+                <!-- ABOUT TAB -->
+                <div id="tab-about" class="tab-content hidden fade-in">
+                    <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-pink-400 to-white bg-clip-text text-transparent">Qui sommes-nous</h2>
+                    <div class="space-y-6">
+                        <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-pink-400 mb-4">Titres</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div><label class="block text-sm text-gray-400 mb-1">Titre ligne 1</label><input type="text" id="about_title1" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="Qui"></div>
+                                <div><label class="block text-sm text-gray-400 mb-1">Titre ligne 2</label><input type="text" id="about_title2" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="sommes-nous ?"></div>
+                            </div>
+                        </div>
+                        <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-pink-400 mb-4">Paragraphes</h3>
+                            <div class="space-y-4">
+                                <div><label class="block text-sm text-gray-400 mb-1">Paragraphe 1</label><textarea id="about_para1" rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></textarea></div>
+                                <div><label class="block text-sm text-gray-400 mb-1">Paragraphe 2</label><textarea id="about_para2" rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></textarea></div>
+                            </div>
+                        </div>
+                        <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-pink-400 mb-4">Statistiques</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div><label class="block text-sm text-gray-400 mb-1">Stat 1 - Chiffre</label><input type="text" id="about_stat1Num" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></div>
+                                <div><label class="block text-sm text-gray-400 mb-1">Stat 1 - Label</label><input type="text" id="about_stat1Label" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></div>
+                                <div><label class="block text-sm text-gray-400 mb-1">Stat 2 - Chiffre</label><input type="text" id="about_stat2Num" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></div>
+                                <div><label class="block text-sm text-gray-400 mb-1">Stat 2 - Label</label><input type="text" id="about_stat2Label" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></div>
+                            </div>
+                        </div>
+                        <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-pink-400 mb-4">Points forts</h3>
+                            <div id="bulletsList" class="space-y-3"></div>
+                            <button onclick="addBullet()" class="mt-4 px-4 py-2 bg-pink-600/20 border border-pink-500/30 rounded-lg text-sm text-pink-400 hover:bg-pink-600/30 transition-all">+ Ajouter un point</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTACT TAB -->
+                <div id="tab-contact" class="tab-content hidden fade-in">
+                    <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-pink-400 to-white bg-clip-text text-transparent">Contact</h2>
+                    <div class="space-y-6">
+                        <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-pink-400 mb-4">Section Contact</h3>
+                            <div class="space-y-4">
+                                <div><label class="block text-sm text-gray-400 mb-1">Titre</label><input type="text" id="contact_title" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></div>
+                                <div><label class="block text-sm text-gray-400 mb-1">Sous-titre</label><input type="text" id="contact_subtitle" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></div>
+                                <div><label class="block text-sm text-gray-400 mb-1">Email</label><input type="email" id="contact_email" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></div>
+                                <div><label class="block text-sm text-gray-400 mb-1">Texte du bouton</label><input type="text" id="contact_btnText" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FOOTER TAB -->
+                <div id="tab-footer" class="tab-content hidden fade-in">
+                    <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-pink-400 to-white bg-clip-text text-transparent">Footer</h2>
+                    <div class="space-y-6">
+                        <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-pink-400 mb-4">Informations</h3>
+                            <div class="space-y-4">
+                                <div><label class="block text-sm text-gray-400 mb-1">Slogan footer</label><input type="text" id="footer_slogan" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></div>
+                                <div><label class="block text-sm text-gray-400 mb-1">Copyright</label><input type="text" id="footer_copyright" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></div>
+                            </div>
+                        </div>
+                        <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-pink-400 mb-4">Reseaux sociaux</h3>
+                            <p class="text-xs text-gray-500 mb-4">Icone = emoji, URL d'image, ou upload. URL reseau = lien du profil. Laissez l'URL reseau vide pour masquer.</p>
+                            <div class="space-y-5">
+                                <div>
+                                    <label class="block text-sm text-gray-400 mb-1">Instagram</label>
+                                    <div class="flex gap-2 items-center mb-2">
+                                        <span class="text-xs text-gray-500 w-12 flex-shrink-0">Icone:</span>
+                                        <input type="text" id="footer_instagramIcon" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="Emoji ou URL image" oninput="updateFooterIconPreview('instagram')">
+                                        <label class="px-3 py-2 bg-pink-600/20 border border-pink-500/30 rounded-lg text-xs text-pink-400 cursor-pointer hover:bg-pink-600/30 transition-all whitespace-nowrap">Upload<input type="file" accept="image/*" class="hidden" onchange="handleFooterIconUpload(event,'instagram')"></label>
+                                        <div id="footer_instagramIcon_preview" class="w-9 h-9 flex items-center justify-center bg-gray-800 rounded-lg border border-gray-700 flex-shrink-0"></div>
+                                    </div>
+                                    <div class="flex gap-2 items-center">
+                                        <span class="text-xs text-gray-500 w-12 flex-shrink-0">URL:</span>
+                                        <input type="text" id="footer_instagram" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="https://instagram.com/...">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-400 mb-1">LinkedIn</label>
+                                    <div class="flex gap-2 items-center mb-2">
+                                        <span class="text-xs text-gray-500 w-12 flex-shrink-0">Icone:</span>
+                                        <input type="text" id="footer_linkedinIcon" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="Emoji ou URL image" oninput="updateFooterIconPreview('linkedin')">
+                                        <label class="px-3 py-2 bg-pink-600/20 border border-pink-500/30 rounded-lg text-xs text-pink-400 cursor-pointer hover:bg-pink-600/30 transition-all whitespace-nowrap">Upload<input type="file" accept="image/*" class="hidden" onchange="handleFooterIconUpload(event,'linkedin')"></label>
+                                        <div id="footer_linkedinIcon_preview" class="w-9 h-9 flex items-center justify-center bg-gray-800 rounded-lg border border-gray-700 flex-shrink-0"></div>
+                                    </div>
+                                    <div class="flex gap-2 items-center">
+                                        <span class="text-xs text-gray-500 w-12 flex-shrink-0">URL:</span>
+                                        <input type="text" id="footer_linkedin" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="https://linkedin.com/...">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-400 mb-1">TikTok</label>
+                                    <div class="flex gap-2 items-center mb-2">
+                                        <span class="text-xs text-gray-500 w-12 flex-shrink-0">Icone:</span>
+                                        <input type="text" id="footer_tiktokIcon" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="Emoji ou URL image" oninput="updateFooterIconPreview('tiktok')">
+                                        <label class="px-3 py-2 bg-pink-600/20 border border-pink-500/30 rounded-lg text-xs text-pink-400 cursor-pointer hover:bg-pink-600/30 transition-all whitespace-nowrap">Upload<input type="file" accept="image/*" class="hidden" onchange="handleFooterIconUpload(event,'tiktok')"></label>
+                                        <div id="footer_tiktokIcon_preview" class="w-9 h-9 flex items-center justify-center bg-gray-800 rounded-lg border border-gray-700 flex-shrink-0"></div>
+                                    </div>
+                                    <div class="flex gap-2 items-center">
+                                        <span class="text-xs text-gray-500 w-12 flex-shrink-0">URL:</span>
+                                        <input type="text" id="footer_tiktok" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="https://tiktok.com/...">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-400 mb-1">Email</label>
+                                    <div class="flex gap-2 items-center mb-2">
+                                        <span class="text-xs text-gray-500 w-12 flex-shrink-0">Icone:</span>
+                                        <input type="text" id="footer_emailIcon" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="Emoji ou URL image" oninput="updateFooterIconPreview('email')">
+                                        <label class="px-3 py-2 bg-pink-600/20 border border-pink-500/30 rounded-lg text-xs text-pink-400 cursor-pointer hover:bg-pink-600/30 transition-all whitespace-nowrap">Upload<input type="file" accept="image/*" class="hidden" onchange="handleFooterIconUpload(event,'email')"></label>
+                                        <div id="footer_emailIcon_preview" class="w-9 h-9 flex items-center justify-center bg-gray-800 rounded-lg border border-gray-700 flex-shrink-0"></div>
+                                    </div>
+                                    <div class="flex gap-2 items-center">
+                                        <span class="text-xs text-gray-500 w-12 flex-shrink-0">URL:</span>
+                                        <input type="text" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm text-gray-500 cursor-not-allowed" disabled value="Automatique depuis Contact">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEO TAB -->
+                <div id="tab-seo" class="tab-content hidden fade-in">
+                    <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-pink-400 to-white bg-clip-text text-transparent">SEO / Meta</h2>
+                    <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                        <h3 class="text-lg font-semibold text-pink-400 mb-4">Metadonnees</h3>
+                        <div><label class="block text-sm text-gray-400 mb-1">Titre de la page (onglet navigateur)</label><input type="text" id="seo_title" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></div>
+                    </div>
+                </div>
+
+                <!-- ACCOUNT TAB -->
+                <div id="tab-account" class="tab-content hidden fade-in">
+                    <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-pink-400 to-white bg-clip-text text-transparent">Compte Admin</h2>
+                    <div class="space-y-6">
+                        <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-pink-400 mb-4">Modifier les identifiants</h3>
+                            <div class="space-y-4">
+                                <div><label class="block text-sm text-gray-400 mb-1">Nouvel identifiant</label><input type="text" id="acc_username" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" autocomplete="off"></div>
+                                <div><label class="block text-sm text-gray-400 mb-1">Nouveau mot de passe</label><input type="password" id="acc_password" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" autocomplete="new-password"></div>
+                                <div><label class="block text-sm text-gray-400 mb-1">Confirmer le mot de passe</label><input type="password" id="acc_passwordConfirm" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" autocomplete="new-password"></div>
+                                <button onclick="updateCredentials()" class="px-6 py-2 bg-gradient-to-r from-pink-600 to-pink-500 rounded-lg text-sm font-semibold hover:shadow-lg hover:shadow-pink-500/30 transition-all">Mettre a jour les identifiants</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script>
+    // ======================== AUTH ========================
+    const DEFAULT_CREDS = { username: 'admin', password: 'admin123' };
+
+    function getCredentials() {
+        const saved = localStorage.getItem('pinkAgencyAdminCreds');
+        return saved ? JSON.parse(saved) : { ...DEFAULT_CREDS };
+    }
+
+    function handleLogin(e) {
+        e.preventDefault();
+        const user = document.getElementById('loginUser').value;
+        const pass = document.getElementById('loginPass').value;
+        const creds = getCredentials();
+        if (user === creds.username && pass === creds.password) {
+            sessionStorage.setItem('pinkAdminLoggedIn', 'true');
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('adminPanel').classList.remove('hidden');
+            document.getElementById('loginError').classList.add('hidden');
+            loadConfig();
+            populateFields();
+        } else {
+            document.getElementById('loginError').classList.remove('hidden');
+        }
+    }
+
+    function logout() {
+        sessionStorage.removeItem('pinkAdminLoggedIn');
+        document.getElementById('adminPanel').classList.add('hidden');
+        document.getElementById('loginScreen').classList.remove('hidden');
+        document.getElementById('loginUser').value = '';
+        document.getElementById('loginPass').value = '';
+    }
+
+    function updateCredentials() {
+        const user = document.getElementById('acc_username').value.trim();
+        const pass = document.getElementById('acc_password').value;
+        const confirm = document.getElementById('acc_passwordConfirm').value;
+        if (!user) { showToast('Identifiant requis', 'error'); return; }
+        if (!pass) { showToast('Mot de passe requis', 'error'); return; }
+        if (pass !== confirm) { showToast('Les mots de passe ne correspondent pas', 'error'); return; }
+        if (pass.length < 4) { showToast('Mot de passe trop court (min 4 caracteres)', 'error'); return; }
+        localStorage.setItem('pinkAgencyAdminCreds', JSON.stringify({ username: user, password: pass }));
+        document.getElementById('acc_password').value = '';
+        document.getElementById('acc_passwordConfirm').value = '';
+        showToast('Identifiants mis a jour !', 'success');
+    }
+
+    // Check session on load
+    if (sessionStorage.getItem('pinkAdminLoggedIn') === 'true') {
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('adminPanel').classList.remove('hidden');
+    }
+
+    // ======================== DEFAULT CONFIG ========================
+    const DEFAULT_CONFIG = {
+        general: {
+            logoUrl: "https://i.imgur.com/DS3yaqU.png",
+            brandName: "PINK AGENCY",
+            nav1: "Accueil", nav1Icon: "\u{1F3E0}",
+            nav2: "Nos Services", nav2Icon: "\u{1F4BC}",
+            nav3: "Qui sommes-nous", nav3Icon: "\u{1F465}",
+            navCta: "Contactez-nous", navCtaIcon: "\u{1F4AC}"
+        },
+        hero: {
+            description: "Votre partenaire digital pour propulser votre business vers de nouveaux sommets. Cr\u00e9ation, publicit\u00e9, design \u2014 nous transformons vos id\u00e9es en succ\u00e8s \u{1F680}",
+            btn1Text: "D\u00e9couvrir nos services \u2192", btn1Link: "#services",
+            btn2Text: "Nous contacter", btn2Link: "#contact"
+        },
+        services: {
+            introText: 'Pink Agency est l\'agence digitale qui comprend vos enjeux. <span class="font-bold bg-gradient-to-r from-white via-pink-300 to-pink-400 bg-clip-text text-transparent">Plus de visibilit\u00e9, plus de clients, plus de r\u00e9sultats.</span> Entrepreneurs et entreprises, arr\u00eatez de passer inaper\u00e7u : nous cr\u00e9ons votre pr\u00e9sence digitale de A \u00e0 Z. Site web professionnel, campagnes publicitaires rentables (Facebook, Instagram, TikTok, Google), Logo, Flyers, Cr\u00e9ations Vid\u00e9o, Boutique en ligne (Shopify, Wordpress), Fournisseur, Structure d\'entreprise (LLC USA, LLC HK) pour plus d\'anonymat, formation e-commerce... Notre expertise au service de votre succ\u00e8s. Plus de ventes, plus de croissance. <span class="font-bold bg-gradient-to-r from-white via-pink-300 to-pink-400 bg-clip-text text-transparent">Votre transformation commence maintenant.</span>',
+            sectionTitle: "Nos Services",
+            sectionSubtitle: 'Des solutions compl\u00e8tes pour d\u00e9velopper votre pr\u00e9sence digitale et faire <span class="text-pink-400 font-bold">exploser</span> vos ventes',
+            items: [
+                {title: "Cr\u00e9ation de LLC", description: "Accompagnement complet pour la cr\u00e9ation de votre soci\u00e9t\u00e9 LLC aux \u00c9tats-Unis et \u00e0 Hong Kong. Pour avoir une structure d'entreprise claire et anonyme.", iconType: "svg", iconData: "building"},
+                {title: "Site Vitrine", description: "Conception de sites web modernes et \u00e9l\u00e9gants pour pr\u00e9senter votre entreprise et attirer de nouveaux clients.", iconType: "svg", iconData: "globe"},
+                {title: "Boutique Shopify", description: "Cr\u00e9ation de votre boutique en ligne sur Shopify, optimis\u00e9e pour la conversion et pr\u00eate \u00e0 vendre.", iconType: "svg", iconData: "shop"},
+                {title: "Agent Chine E-commerce", description: "Mise en relation avec des agents fiables en Chine pour le sourcing de produits et le dropshipping.", iconType: "svg", iconData: "chain"},
+                {title: "Formation E-commerce", description: "Formation compl\u00e8te de A \u00e0 Z pour cr\u00e9er et lancer votre boutique en ligne.", iconType: "svg", iconData: "education"},
+                {title: "Publicit\u00e9 Meta", description: "Campagnes publicitaires performantes sur Facebook et Instagram pour maximiser votre ROI.", iconType: "svg", iconData: "meta"},
+                {title: "Publicit\u00e9 TikTok", description: "Strat\u00e9gies publicitaires innovantes sur TikTok pour toucher une audience jeune et engag\u00e9e.", iconType: "svg", iconData: "tiktok"},
+                {title: "Publicit\u00e9 Snapchat", description: "Campagnes cibl\u00e9es sur Snapchat pour atteindre votre audience de mani\u00e8re cr\u00e9ative.", iconType: "svg", iconData: "snapchat"},
+                {title: "Google Ads", description: "Gestion de campagnes Google Ads (Search, Display, Shopping) pour augmenter votre visibilit\u00e9.", iconType: "svg", iconData: "search"},
+                {title: "Pinterest Ads", description: "Publicit\u00e9s Pinterest optimis\u00e9es pour g\u00e9n\u00e9rer du trafic qualifi\u00e9 et des conversions.", iconType: "svg", iconData: "pin"},
+                {title: "Cr\u00e9ation de Logo", description: "Design de logos uniques et m\u00e9morables qui refl\u00e8tent l'identit\u00e9 de votre marque.", iconType: "svg", iconData: "logo"},
+                {title: "Design de Flyers", description: "Cr\u00e9ation de flyers professionnels et impactants pour vos campagnes marketing.", iconType: "svg", iconData: "flyer"}
+            ]
+        },
+        about: {
+            title1: "Qui", title2: "sommes-nous ?",
+            para1: 'Nous sommes une <span class="text-pink-400 font-bold">agence digitale nouvelle g\u00e9n\u00e9ration</span>, sp\u00e9cialis\u00e9e dans la cr\u00e9ation d\'entreprises, le d\u00e9veloppement web et le marketing digital multi-plateformes.',
+            para2: 'Notre mission : vous accompagner de <span class="text-pink-400 font-bold">A \u00e0 Z</span> dans votre transformation digitale avec des solutions innovantes, cr\u00e9atives et performantes qui g\u00e9n\u00e8rent des r\u00e9sultats <span class="text-pink-400 font-bold">concrets</span>.',
+            stat1Num: "100+", stat1Label: "Projets r\u00e9alis\u00e9s",
+            stat2Num: "24/7", stat2Label: "Support disponible",
+            bullets: ["Expertise multi-plateformes", "Strat\u00e9gies sur-mesure", "ROI maximis\u00e9", "Design premium", "Support d\u00e9di\u00e9"]
+        },
+        contact: { title: "Contactez-nous", subtitle: "Pr\u00eat \u00e0 propulser votre business ? Discutons de votre projet !", email: "contact@pinks-agency.fr", btnText: "Demander un devis gratuit" },
+        footer: {
+            slogan: "Votre succ\u00e8s digital commence ici",
+            copyright: "\u00a9 2026 Pink Agency. Tous droits r\u00e9serv\u00e9s.",
+            instagram: "https://instagram.com", instagramIcon: "\u{1F4F7}",
+            linkedin: "https://linkedin.com", linkedinIcon: "\u{1F4BC}",
+            tiktok: "", tiktokIcon: "\u{1F3B5}",
+            emailIcon: "\u2709\uFE0F"
+        },
+        seo: { title: "Pink Agency - Agence Digitale" }
+    };
+
+    // ======================== SVG ICON LIBRARY ========================
+    const SVG_ICONS = {
+        building: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><rect x="20" y="30" width="20" height="50" fill="url(#ig)" opacity="0.8"/><rect x="45" y="20" width="20" height="60" fill="url(#ig)"/><rect x="70" y="35" width="20" height="45" fill="url(#ig)" opacity="0.8"/><path d="M15 80 L85 80" stroke="url(#ig)" stroke-width="3" fill="none"/><circle cx="50" cy="10" r="3" fill="#FFFFFF"/></svg>',
+        globe: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><circle cx="50" cy="50" r="35" fill="none" stroke="url(#ig)" stroke-width="2"/><ellipse cx="50" cy="50" rx="35" ry="15" fill="none" stroke="url(#ig)" stroke-width="2"/><line x1="50" y1="15" x2="50" y2="85" stroke="url(#ig)" stroke-width="2"/><line x1="15" y1="50" x2="85" y2="50" stroke="url(#ig)" stroke-width="2"/></svg>',
+        shop: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><rect x="30" y="20" width="40" height="35" fill="none" stroke="url(#ig)" stroke-width="2.5"/><path d="M25 55 L30 20 L70 20 L75 55 Z" fill="url(#ig)" opacity="0.6"/><path d="M25 55 L30 80 L70 80 L75 55 Z" fill="url(#ig)"/></svg>',
+        chain: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><circle cx="30" cy="50" r="20" fill="none" stroke="url(#ig)" stroke-width="2.5"/><circle cx="70" cy="50" r="20" fill="none" stroke="url(#ig)" stroke-width="2.5"/></svg>',
+        education: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><path d="M50 20 L20 35 L50 50 L80 35 Z" fill="url(#ig)" opacity="0.8"/><path d="M20 35 L20 60 L50 75 L80 60 L80 35" fill="none" stroke="url(#ig)" stroke-width="2.5"/></svg>',
+        meta: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><rect x="15" y="25" width="30" height="50" rx="5" fill="none" stroke="url(#ig)" stroke-width="2.5"/><rect x="55" y="25" width="30" height="50" rx="5" fill="none" stroke="url(#ig)" stroke-width="2.5"/></svg>',
+        tiktok: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><path d="M50 20 L50 70" stroke="url(#ig)" stroke-width="3"/><circle cx="50" cy="70" r="10" fill="none" stroke="url(#ig)" stroke-width="2.5"/></svg>',
+        snapchat: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><path d="M50 20 Q70 20 70 40 Q70 55 50 60 Q30 55 30 40 Q30 20 50 20" fill="url(#ig)" opacity="0.7"/></svg>',
+        search: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><circle cx="50" cy="50" r="30" fill="none" stroke="url(#ig)" stroke-width="2.5"/><path d="M65 35 L75 25" stroke="url(#ig)" stroke-width="3" stroke-linecap="round"/></svg>',
+        pin: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><circle cx="50" cy="35" r="10" fill="none" stroke="url(#ig)" stroke-width="2.5"/><path d="M50 45 L50 75" stroke="url(#ig)" stroke-width="2.5"/></svg>',
+        logo: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><circle cx="50" cy="50" r="30" fill="none" stroke="url(#ig)" stroke-width="2.5"/><path d="M35 40 L50 30 L65 40" fill="none" stroke="url(#ig)" stroke-width="2.5"/></svg>',
+        flyer: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><rect x="25" y="20" width="50" height="60" rx="3" fill="none" stroke="url(#ig)" stroke-width="2.5"/><path d="M35 35 L65 35" stroke="url(#ig)" stroke-width="2"/></svg>',
+        star: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><path d="M50 15 L58 40 L85 40 L63 55 L72 80 L50 65 L28 80 L37 55 L15 40 L42 40 Z" fill="url(#ig)" opacity="0.8"/></svg>',
+        rocket: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><path d="M50 15 Q65 30 65 55 L50 70 L35 55 Q35 30 50 15 Z" fill="url(#ig)" opacity="0.8"/><circle cx="50" cy="40" r="5" fill="#FFF" opacity="0.8"/><path d="M35 55 L25 65 L35 60" fill="url(#ig)" opacity="0.6"/><path d="M65 55 L75 65 L65 60" fill="url(#ig)" opacity="0.6"/></svg>',
+        heart: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><path d="M50 80 Q20 55 20 35 Q20 20 35 20 Q50 20 50 35 Q50 20 65 20 Q80 20 80 35 Q80 55 50 80 Z" fill="url(#ig)" opacity="0.8"/></svg>',
+        chart: '<svg viewBox="0 0 100 100" class="w-16 h-16 sm:w-20 sm:h-20"><defs><linearGradient id="ig" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1"/><stop offset="50%" style="stop-color:#FF69B4;stop-opacity:1"/><stop offset="100%" style="stop-color:#FF1493;stop-opacity:1"/></linearGradient></defs><rect x="15" y="55" width="15" height="25" fill="url(#ig)" opacity="0.6"/><rect x="35" y="40" width="15" height="40" fill="url(#ig)" opacity="0.8"/><rect x="55" y="25" width="15" height="55" fill="url(#ig)"/><rect x="75" y="15" width="15" height="65" fill="url(#ig)" opacity="0.9"/><line x1="10" y1="80" x2="95" y2="80" stroke="url(#ig)" stroke-width="2"/></svg>'
+    };
+    const ICON_NAMES = Object.keys(SVG_ICONS);
+
+    // ======================== STATE ========================
+    let config = {};
+
+    function loadConfig() {
+        const saved = localStorage.getItem('pinkAgencyConfig');
+        config = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+        // Ensure new fields exist (backward compat)
+        if (!config.general.nav1Icon && config.general.nav1Icon !== '') config.general.nav1Icon = DEFAULT_CONFIG.general.nav1Icon;
+        if (!config.general.nav2Icon && config.general.nav2Icon !== '') config.general.nav2Icon = DEFAULT_CONFIG.general.nav2Icon;
+        if (!config.general.nav3Icon && config.general.nav3Icon !== '') config.general.nav3Icon = DEFAULT_CONFIG.general.nav3Icon;
+        if (!config.general.navCtaIcon && config.general.navCtaIcon !== '') config.general.navCtaIcon = DEFAULT_CONFIG.general.navCtaIcon;
+        if (!config.footer.instagramIcon && config.footer.instagramIcon !== '') config.footer.instagramIcon = DEFAULT_CONFIG.footer.instagramIcon;
+        if (!config.footer.linkedinIcon && config.footer.linkedinIcon !== '') config.footer.linkedinIcon = DEFAULT_CONFIG.footer.linkedinIcon;
+        if (!config.footer.tiktokIcon && config.footer.tiktokIcon !== '') config.footer.tiktokIcon = DEFAULT_CONFIG.footer.tiktokIcon;
+        if (!config.footer.emailIcon && config.footer.emailIcon !== '') config.footer.emailIcon = DEFAULT_CONFIG.footer.emailIcon;
+    }
+
+    function saveAll() {
+        config.general = {
+            logoUrl: v('gen_logoUrl'), brandName: v('gen_brandName'),
+            nav1: v('gen_nav1'), nav1Icon: v('gen_nav1Icon'),
+            nav2: v('gen_nav2'), nav2Icon: v('gen_nav2Icon'),
+            nav3: v('gen_nav3'), nav3Icon: v('gen_nav3Icon'),
+            navCta: v('gen_navCta'), navCtaIcon: v('gen_navCtaIcon')
+        };
+        config.hero = { description: v('hero_description'), btn1Text: v('hero_btn1Text'), btn1Link: v('hero_btn1Link'), btn2Text: v('hero_btn2Text'), btn2Link: v('hero_btn2Link') };
+        config.services.introText = v('svc_introText');
+        config.services.sectionTitle = v('svc_sectionTitle');
+        config.services.sectionSubtitle = v('svc_sectionSubtitle');
+        config.services.items = collectServicesFromDOM();
+        config.about = { title1: v('about_title1'), title2: v('about_title2'), para1: v('about_para1'), para2: v('about_para2'), stat1Num: v('about_stat1Num'), stat1Label: v('about_stat1Label'), stat2Num: v('about_stat2Num'), stat2Label: v('about_stat2Label'), bullets: collectBullets() };
+        config.contact = { title: v('contact_title'), subtitle: v('contact_subtitle'), email: v('contact_email'), btnText: v('contact_btnText') };
+        config.footer = {
+            slogan: v('footer_slogan'), copyright: v('footer_copyright'),
+            instagram: v('footer_instagram'), instagramIcon: v('footer_instagramIcon'),
+            linkedin: v('footer_linkedin'), linkedinIcon: v('footer_linkedinIcon'),
+            tiktok: v('footer_tiktok'), tiktokIcon: v('footer_tiktokIcon'),
+            emailIcon: v('footer_emailIcon')
+        };
+        config.seo = { title: v('seo_title') };
+        localStorage.setItem('pinkAgencyConfig', JSON.stringify(config));
+        // Sync config to main site (Firefox file:// fix)
+        try {
+            const configStr = JSON.stringify(config);
+            const encoded = encodeURIComponent(configStr);
+            if (encoded.length < 2000000) {
+                localStorage.setItem('pinkAgencyConfigSync', encoded);
+            }
+        } catch(e) { console.warn('Sync encode error', e); }
+        showToast('Sauvegarde avec succes !', 'success');
+    }
+    function saveAndView() {
+        saveAll();
+        const configStr = JSON.stringify(config);
+        const encoded = encodeURIComponent(configStr);
+        window.open('/#pinkconfig=' + encoded, '_blank');
+    }
+
+    function v(id) { const el = document.getElementById(id); return el ? el.value : ''; }
+    function sv(id, val) { const el = document.getElementById(id); if (el) el.value = val || ''; }
+
+    function populateFields() {
+        sv('gen_logoUrl', config.general.logoUrl); sv('gen_brandName', config.general.brandName);
+        sv('gen_nav1', config.general.nav1); sv('gen_nav1Icon', config.general.nav1Icon);
+        sv('gen_nav2', config.general.nav2); sv('gen_nav2Icon', config.general.nav2Icon);
+        sv('gen_nav3', config.general.nav3); sv('gen_nav3Icon', config.general.nav3Icon);
+        sv('gen_navCta', config.general.navCta); sv('gen_navCtaIcon', config.general.navCtaIcon);
+        updatePreview('gen_logoUrl', 'gen_logoPreview');
+        sv('hero_description', config.hero.description); sv('hero_btn1Text', config.hero.btn1Text); sv('hero_btn1Link', config.hero.btn1Link); sv('hero_btn2Text', config.hero.btn2Text); sv('hero_btn2Link', config.hero.btn2Link);
+        sv('svc_introText', config.services.introText); sv('svc_sectionTitle', config.services.sectionTitle); sv('svc_sectionSubtitle', config.services.sectionSubtitle);
+        renderServicesList();
+        sv('about_title1', config.about.title1); sv('about_title2', config.about.title2); sv('about_para1', config.about.para1); sv('about_para2', config.about.para2);
+        sv('about_stat1Num', config.about.stat1Num); sv('about_stat1Label', config.about.stat1Label); sv('about_stat2Num', config.about.stat2Num); sv('about_stat2Label', config.about.stat2Label);
+        renderBullets();
+        sv('contact_title', config.contact.title); sv('contact_subtitle', config.contact.subtitle); sv('contact_email', config.contact.email); sv('contact_btnText', config.contact.btnText);
+        sv('footer_slogan', config.footer.slogan); sv('footer_copyright', config.footer.copyright);
+        sv('footer_instagram', config.footer.instagram); sv('footer_instagramIcon', config.footer.instagramIcon);
+        sv('footer_linkedin', config.footer.linkedin); sv('footer_linkedinIcon', config.footer.linkedinIcon);
+        sv('footer_tiktok', config.footer.tiktok); sv('footer_tiktokIcon', config.footer.tiktokIcon);
+        sv('footer_emailIcon', config.footer.emailIcon);
+        sv('seo_title', config.seo.title);
+        // Account
+        const creds = getCredentials();
+        sv('acc_username', creds.username);
+    }
+
+    // ======================== TABS ========================
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.tab-btn').forEach(el => { el.classList.remove('tab-active'); el.classList.add('text-gray-400'); });
+        const tab = document.getElementById('tab-' + tabName);
+        if (tab) { tab.classList.remove('hidden'); tab.classList.add('fade-in'); }
+        const btn = document.querySelector(`[data-tab="${tabName}"]`);
+        if (btn) { btn.classList.add('tab-active'); btn.classList.remove('text-gray-400'); }
+    }
+
+    // ======================== SERVICES ========================
+    function renderServicesList() {
+        const list = document.getElementById('servicesList'); list.innerHTML = '';
+        config.services.items.forEach((svc, i) => {
+            // Ensure bg defaults
+            if (svc.bgImage === undefined) svc.bgImage = '';
+            if (svc.bgOpacity === undefined) svc.bgOpacity = 0.15;
+            if (svc.bgBlur === undefined) svc.bgBlur = 0;
+            const div = document.createElement('div');
+            div.className = 'field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6 fade-in';
+            div.setAttribute('data-service-index', i);
+            const bgPreviewStyle = svc.bgImage ? `background-image:url('${escapeAttr(svc.bgImage)}');background-size:cover;background-position:center;opacity:${svc.bgOpacity};filter:blur(${svc.bgBlur}px);` : '';
+            div.innerHTML = `<div class="flex items-start justify-between mb-4"><h3 class="text-lg font-semibold text-pink-400">Service ${i+1}</h3><div class="flex gap-2">${i>0?`<button onclick="moveService(${i},-1)" class="px-2 py-1 text-xs border border-gray-700 rounded hover:bg-gray-700 transition-all">&#8593;</button>`:''} ${i<config.services.items.length-1?`<button onclick="moveService(${i},1)" class="px-2 py-1 text-xs border border-gray-700 rounded hover:bg-gray-700 transition-all">&#8595;</button>`:''} <button onclick="removeService(${i})" class="px-3 py-1 text-xs bg-red-500/20 text-red-400 border border-red-500/30 rounded hover:bg-red-500/30 transition-all">Supprimer</button></div></div>`
+            + `<div class="space-y-4">`
+            + `<div><label class="block text-sm text-gray-400 mb-1">Titre</label><input type="text" class="svc-title w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" value="${escapeAttr(svc.title)}"></div>`
+            + `<div><label class="block text-sm text-gray-400 mb-1">Description</label><textarea class="svc-desc w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" rows="3">${escapeHtml(svc.description)}</textarea></div>`
+            + `<div><label class="block text-sm text-gray-400 mb-1">Icone</label><div class="flex gap-3 items-start"><select class="svc-icon-type bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-pink-500 focus:outline-none" onchange="toggleIconInput(${i},this.value)"><option value="svg" ${svc.iconType==='svg'?'selected':''}>Icone integree</option><option value="image" ${svc.iconType==='image'?'selected':''}>Image (URL/Upload)</option><option value="emoji" ${svc.iconType==='emoji'?'selected':''}>Emoji</option><option value="custom_svg" ${svc.iconType==='custom_svg'?'selected':''}>SVG personnalise</option></select><div class="svc-icon-input flex-1">${getIconInputHTML(i,svc)}</div><div class="svc-icon-preview w-16 h-16 flex items-center justify-center bg-gray-800 rounded-lg border border-gray-700">${getIconPreview(svc)}</div></div></div>`
+            + `<div class="border-t border-gray-700 pt-4 mt-2"><label class="block text-sm text-pink-400 font-semibold mb-1">Image de fond</label><p class="text-xs text-gray-500 mb-3">Dimensions recommandees : <span class="text-pink-400/80">800x600 px</span> minimum (ratio 4:3). Pour un rendu optimal, utilisez des images en <span class="text-pink-400/80">1200x800 px</span> ou plus. Formats acceptes : JPG, PNG, WebP.</p>`
+            + `<div class="flex gap-2 items-center mb-3"><input type="text" class="svc-bg-image flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" value="${escapeAttr(svc.bgImage)}" placeholder="URL de l'image ou uploader" oninput="updateBgPreview(${i})"><label class="px-3 py-2 bg-pink-600/20 border border-pink-500/30 rounded-lg text-xs text-pink-400 cursor-pointer hover:bg-pink-600/30 transition-all whitespace-nowrap">Upload<input type="file" accept="image/*" class="hidden" onchange="handleServiceBgUpload(event,${i})"></label>${svc.bgImage?`<button onclick="clearServiceBg(${i})" class="px-3 py-2 text-xs bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/30 whitespace-nowrap">Retirer</button>`:''}</div>`
+            + `<div class="grid grid-cols-2 gap-4 mb-3"><div><label class="block text-xs text-gray-500 mb-1">Transparence : <span class="svc-bg-opacity-val text-pink-400">${Math.round(svc.bgOpacity*100)}%</span></label><input type="range" class="svc-bg-opacity w-full accent-pink-500" min="0" max="100" value="${Math.round(svc.bgOpacity*100)}" oninput="this.closest('[data-service-index]').querySelector('.svc-bg-opacity-val').textContent=this.value+'%'; updateBgPreview(${i})"></div><div><label class="block text-xs text-gray-500 mb-1">Flou : <span class="svc-bg-blur-val text-pink-400">${svc.bgBlur}px</span></label><input type="range" class="svc-bg-blur w-full accent-pink-500" min="0" max="20" value="${svc.bgBlur}" oninput="this.closest('[data-service-index]').querySelector('.svc-bg-blur-val').textContent=this.value+'px'; updateBgPreview(${i})"></div></div>`
+            + `<div class="svc-bg-preview relative w-full h-24 rounded-lg border border-gray-700 overflow-hidden bg-gray-800">${svc.bgImage ? `<div class="absolute inset-0" style="${bgPreviewStyle}"></div><div class="absolute inset-0 flex items-center justify-center text-xs text-white font-semibold z-10">Apercu</div>` : '<div class="flex items-center justify-center h-full text-xs text-gray-600">Aucune image</div>'}</div>`
+            + `</div></div>`;
+            list.appendChild(div);
+        });
+    }
+    function getIconInputHTML(index, svc) {
+        if (svc.iconType === 'svg') { return `<select class="svc-icon-data w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-pink-500 focus:outline-none" onchange="updateServiceIconPreview(${index})">${ICON_NAMES.map(n=>`<option value="${n}" ${svc.iconData===n?'selected':''}>${n}</option>`).join('')}</select>`; }
+        if (svc.iconType === 'image') { return `<div class="flex gap-2"><input type="text" class="svc-icon-data flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-pink-500 focus:outline-none" value="${escapeAttr(svc.iconData)}" placeholder="URL" onchange="updateServiceIconPreview(${index})"><label class="px-3 py-2 bg-pink-600/20 border border-pink-500/30 rounded-lg text-xs text-pink-400 cursor-pointer hover:bg-pink-600/30 flex items-center">Upload<input type="file" accept="image/*" class="hidden" onchange="handleServiceImageUpload(event,${index})"></label></div>`; }
+        if (svc.iconType === 'emoji') { return `<input type="text" class="svc-icon-data w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-pink-500 focus:outline-none" value="${escapeAttr(svc.iconData)}" placeholder="Ex: \u{1F680}" maxlength="4" onchange="updateServiceIconPreview(${index})">`; }
+        return `<textarea class="svc-icon-data w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-pink-500 focus:outline-none font-mono" rows="3" placeholder="<svg>...</svg>" onchange="updateServiceIconPreview(${index})">${escapeHtml(svc.iconData)}</textarea>`;
+    }
+    function getIconPreview(svc) {
+        if (svc.iconType === 'svg') return SVG_ICONS[svc.iconData] || SVG_ICONS.star;
+        if (svc.iconType === 'image') return svc.iconData ? `<img src="${escapeAttr(svc.iconData)}" class="preview-img max-w-full max-h-full object-contain">` : '\u2014';
+        if (svc.iconType === 'emoji') return `<span class="text-4xl">${svc.iconData || '\u2B50'}</span>`;
+        if (svc.iconType === 'custom_svg') return svc.iconData || '\u2014';
+        return '\u2014';
+    }
+    function toggleIconInput(i, type) { config.services.items[i].iconType = type; config.services.items[i].iconData = type==='svg'?ICON_NAMES[0]:''; renderServicesList(); }
+    function updateServiceIconPreview(i) { const item = document.querySelector(`[data-service-index="${i}"]`); if(!item)return; const d=item.querySelector('.svc-icon-data'); if(d){config.services.items[i].iconData=d.value; const p=item.querySelector('.svc-icon-preview'); if(p)p.innerHTML=getIconPreview(config.services.items[i]);} }
+    function handleServiceImageUpload(e, i) { const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=function(ev){config.services.items[i].iconData=ev.target.result; renderServicesList();}; r.readAsDataURL(f); }
+    function handleServiceBgUpload(e, i) { const f=e.target.files[0]; if(!f)return; config.services.items=collectServicesFromDOM(); const r=new FileReader(); r.onload=function(ev){config.services.items[i].bgImage=ev.target.result; renderServicesList();}; r.readAsDataURL(f); }
+    function clearServiceBg(i) { config.services.items=collectServicesFromDOM(); config.services.items[i].bgImage=''; renderServicesList(); }
+    function updateBgPreview(i) { const item=document.querySelector(`[data-service-index="${i}"]`); if(!item)return; const url=item.querySelector('.svc-bg-image')?.value||''; const op=parseFloat(item.querySelector('.svc-bg-opacity')?.value||'15')/100; const bl=parseInt(item.querySelector('.svc-bg-blur')?.value||'0',10); const p=item.querySelector('.svc-bg-preview'); if(!p)return; if(url){p.innerHTML=`<div class="absolute inset-0" style="background-image:url('${url}');background-size:cover;background-position:center;opacity:${op};filter:blur(${bl}px);"></div><div class="absolute inset-0 flex items-center justify-center text-xs text-white font-semibold z-10">Apercu</div>`;} else {p.innerHTML='<div class="flex items-center justify-center h-full text-xs text-gray-600">Aucune image</div>';} }
+    function collectServicesFromDOM() { const items=[]; document.querySelectorAll('[data-service-index]').forEach(div=>{items.push({title:div.querySelector('.svc-title')?.value||'',description:div.querySelector('.svc-desc')?.value||'',iconType:div.querySelector('.svc-icon-type')?.value||'svg',iconData:div.querySelector('.svc-icon-data')?.value||'',bgImage:div.querySelector('.svc-bg-image')?.value||'',bgOpacity:parseFloat(div.querySelector('.svc-bg-opacity')?.value||'15')/100,bgBlur:parseInt(div.querySelector('.svc-bg-blur')?.value||'0',10)});}); return items.length?items:config.services.items; }
+    function addService() { config.services.items.push({title:"Nouveau service",description:"Description...",iconType:"svg",iconData:"star",bgImage:"",bgOpacity:0.15,bgBlur:0}); renderServicesList(); showToast('Service ajoute','info'); }
+    function removeService(i) { if(config.services.items.length<=1){showToast('Il faut au moins 1 service','error');return;} config.services.items=collectServicesFromDOM(); config.services.items.splice(i,1); renderServicesList(); showToast('Service supprime','info'); }
+    function moveService(i, d) { config.services.items=collectServicesFromDOM(); const n=i+d; if(n<0||n>=config.services.items.length)return; [config.services.items[i],config.services.items[n]]=[config.services.items[n],config.services.items[i]]; renderServicesList(); }
+
+    // ======================== BULLETS ========================
+    function renderBullets() { const l=document.getElementById('bulletsList'); l.innerHTML=''; config.about.bullets.forEach((b,i)=>{const d=document.createElement('div'); d.className='flex gap-2 items-center'; d.innerHTML=`<input type="text" class="bullet-input flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" value="${escapeAttr(b)}"><button onclick="removeBullet(${i})" class="px-3 py-2 text-xs bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/30">\u2715</button>`; l.appendChild(d);}); }
+    function collectBullets() { return Array.from(document.querySelectorAll('.bullet-input')).map(el=>el.value).filter(v=>v.trim()); }
+    function addBullet() { config.about.bullets=collectBullets(); config.about.bullets.push("Nouveau point"); renderBullets(); }
+    function removeBullet(i) { config.about.bullets=collectBullets(); config.about.bullets.splice(i,1); renderBullets(); }
+
+    // ======================== IMAGE UPLOAD ========================
+    function handleImageUpload(e, inputId, previewId) { const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=function(ev){document.getElementById(inputId).value=ev.target.result; updatePreview(inputId,previewId);}; r.readAsDataURL(f); }
+    function updatePreview(inputId, previewId) { const url=document.getElementById(inputId)?.value; const p=document.getElementById(previewId); if(!p)return; p.innerHTML=url?`<img src="${url}" class="preview-img rounded-lg border border-gray-700 mt-2" onerror="this.parentElement.innerHTML='<span class=\\'text-red-400 text-sm\\'>Image introuvable</span>'">`:''; }
+
+    // ======================== NAV ICON UPLOAD/PREVIEW ========================
+    function isImageUrl(val) { return val && (val.startsWith('http://') || val.startsWith('https://') || val.startsWith('data:')); }
+    function renderIconPreview(val) {
+        if (!val) return '';
+        if (isImageUrl(val)) return `<img src="${escapeAttr(val)}" class="w-7 h-7 object-contain rounded" onerror="this.outerHTML='?'">`;
+        return `<span class="text-lg">${val}</span>`;
+    }
+    function handleNavIconUpload(e, key) {
+        const f = e.target.files[0]; if (!f) return;
+        const r = new FileReader(); r.onload = function(ev) {
+            document.getElementById('gen_' + key + 'Icon').value = ev.target.result;
+            updateNavIconPreview(key);
+        }; r.readAsDataURL(f);
+    }
+    function updateNavIconPreview(key) {
+        const val = document.getElementById('gen_' + key + 'Icon')?.value || '';
+        const p = document.getElementById('gen_' + key + 'Icon_preview');
+        if (p) p.innerHTML = renderIconPreview(val);
+    }
+    function handleFooterIconUpload(e, key) {
+        const f = e.target.files[0]; if (!f) return;
+        const r = new FileReader(); r.onload = function(ev) {
+            document.getElementById('footer_' + key + 'Icon').value = ev.target.result;
+            updateFooterIconPreview(key);
+        }; r.readAsDataURL(f);
+    }
+    function updateFooterIconPreview(key) {
+        const val = document.getElementById('footer_' + key + 'Icon')?.value || '';
+        const p = document.getElementById('footer_' + key + 'Icon_preview');
+        if (p) p.innerHTML = renderIconPreview(val);
+    }
+    function refreshAllIconPreviews() {
+        ['nav1','nav2','nav3','navCta'].forEach(k => updateNavIconPreview(k));
+        ['instagram','linkedin','tiktok','email'].forEach(k => updateFooterIconPreview(k));
+    }
+
+    // ======================== IMPORT / EXPORT ========================
+    function exportConfig() { saveAll(); const b=new Blob([JSON.stringify(config,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='pink-agency-config.json'; a.click(); showToast('Configuration exportee','success'); }
+    function importConfig(e) { const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=function(ev){try{config=JSON.parse(ev.target.result); localStorage.setItem('pinkAgencyConfig',JSON.stringify(config)); populateFields(); showToast('Configuration importee !','success');}catch(err){showToast('Fichier JSON invalide','error');}}; r.readAsText(f); e.target.value=''; }
+    function resetAll() { if(!confirm('Remettre toute la configuration par defaut ?'))return; config=JSON.parse(JSON.stringify(DEFAULT_CONFIG)); localStorage.setItem('pinkAgencyConfig',JSON.stringify(config)); populateFields(); showToast('Configuration remise par defaut','info'); }
+
+    // ======================== TOAST ========================
+    function showToast(msg, type='info') { const c=document.getElementById('toastContainer'); const t=document.createElement('div'); const colors={success:'border-green-500 bg-green-500/10 text-green-400',error:'border-red-500 bg-red-500/10 text-red-400',info:'border-pink-500 bg-pink-500/10 text-pink-400'}; t.className=`toast px-6 py-3 rounded-lg border ${colors[type]||colors.info} backdrop-blur-xl text-sm font-semibold`; t.textContent=msg; c.appendChild(t); setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity 0.3s';setTimeout(()=>t.remove(),300);},3000); }
+
+    // ======================== UTILS ========================
+    function escapeAttr(s) { return (s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+    function escapeHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    // ======================== INIT ========================
+    loadConfig();
+    populateFields();
+    refreshAllIconPreviews();
+    document.getElementById('gen_logoUrl')?.addEventListener('input', () => updatePreview('gen_logoUrl', 'gen_logoPreview'));
+    </script>
+</body>
+</html>
