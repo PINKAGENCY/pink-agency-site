@@ -362,7 +362,7 @@
                         const bgOpVal = svc.bgOpacity !== undefined ? svc.bgOpacity : 0.15;
                         const bgBlurVal = svc.bgBlur || 0;
                         const bgHtml = svc.bgImage ? `<img src="${svc.bgImage}" alt="" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;border-radius:1rem;pointer-events:none;opacity:${bgOpVal};filter:blur(${bgBlurVal}px);z-index:1;" onerror="console.error('BG IMG LOAD FAIL:', this.src)">` : '';
-                        div.innerHTML = `${bgHtml}<div style="position:relative;z-index:2;"><div class="mb-4 flex justify-center group-hover:scale-125 group-hover:rotate-12 transition-all duration-500">${getServiceIcon(svc)}</div><h3 class="text-xl sm:text-2xl font-bold mb-3 text-white group-hover:text-pink-300 transition-colors">${svc.title}</h3><p class="text-sm sm:text-base text-gray-400 leading-relaxed">${svc.description}</p></div><div class="absolute inset-0 bg-gradient-to-r from-pink-500/0 via-pink-500/10 to-pink-500/0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" style="z-index:3;"></div>`;
+                        div.innerHTML = `${bgHtml}<div style="position:relative;z-index:2;"><div class="mb-4 flex justify-center group-hover:scale-125 group-hover:rotate-12 transition-all duration-500">${getServiceIcon(svc)}</div><h3 class="text-xl sm:text-2xl font-bold mb-3 text-white group-hover:text-pink-300 transition-colors">${svc.title}</h3><p class="text-sm sm:text-base text-gray-200 leading-relaxed">${svc.description}</p></div><div class="absolute inset-0 bg-gradient-to-r from-pink-500/0 via-pink-500/10 to-pink-500/0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" style="z-index:3;"></div>`;
                         grid.appendChild(div);
                     });
                 }
@@ -470,7 +470,7 @@
                 const div = document.createElement('div');
                 div.className = 'group relative bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-sm border border-pink-500/20 rounded-2xl p-6 sm:p-8 hover:border-pink-500/60 transition-all duration-500 hover:shadow-2xl hover:shadow-pink-500/20 hover:-translate-y-3 cursor-pointer slide-in-right';
                 div.style.animationDelay = `${i * 0.1}s`;
-                div.innerHTML = `<div class="mb-4 flex justify-center group-hover:scale-125 group-hover:rotate-12 transition-all duration-500">${getServiceIcon(svc)}</div><h3 class="text-xl sm:text-2xl font-bold mb-3 text-white group-hover:text-pink-300 transition-colors">${svc.title}</h3><p class="text-sm sm:text-base text-gray-400 leading-relaxed">${svc.description}</p><div class="absolute inset-0 bg-gradient-to-r from-pink-500/0 via-pink-500/10 to-pink-500/0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>`;
+                div.innerHTML = `<div class="mb-4 flex justify-center group-hover:scale-125 group-hover:rotate-12 transition-all duration-500">${getServiceIcon(svc)}</div><h3 class="text-xl sm:text-2xl font-bold mb-3 text-white group-hover:text-pink-300 transition-colors">${svc.title}</h3><p class="text-sm sm:text-base text-gray-200 leading-relaxed">${svc.description}</p><div class="absolute inset-0 bg-gradient-to-r from-pink-500/0 via-pink-500/10 to-pink-500/0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>`;
                 grid.appendChild(div);
             });
 
