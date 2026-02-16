@@ -247,7 +247,8 @@
         // ======================== LOAD CONFIG ========================
         const SUPABASE_URL = 'https://cqurzyjceftqkzbikrmt.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxdXJ6eWpjZWZ0cWt6Ymlrcm10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTc3ODksImV4cCI6MjA4NjczMzc4OX0.k8DFzLeQgDJnPDq_V78RqirQpFyAScilFMingQVX3r4';
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let supabaseClient = null;
+        try { supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch(e) { console.error('Supabase init failed:', e); }
 
         function loadConfig() {
             // Check URL hash for config from admin panel (Firefox file:// fix)
@@ -265,6 +266,7 @@
         }
 
         async function loadConfigFromSupabase() {
+            if (!supabaseClient) return null;
             try {
                 const { data, error } = await supabaseClient.from('site_config').select('config').eq('id', 1).single();
                 if (!error && data && data.config && Object.keys(data.config).length > 0) {

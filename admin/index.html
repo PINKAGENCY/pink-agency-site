@@ -414,16 +414,23 @@
     // ======================== AUTH ========================
     const DEFAULT_CREDS = { username: 'admin', password: 'admin123' };
 
-    function getCredentials() {
+    async function getCredentials() {
+        // Try Supabase first
+        if (typeof supabase !== 'undefined' && supabase) {
+            try {
+                const { data, error } = await supabase.from('admin_creds').select('username, password').eq('id', 1).single();
+                if (!error && data) return data;
+            } catch(e) { console.warn('Supabase creds load failed', e); }
+        }
         const saved = localStorage.getItem('pinkAgencyAdminCreds');
         return saved ? JSON.parse(saved) : { ...DEFAULT_CREDS };
     }
 
-    function handleLogin(e) {
+    async function handleLogin(e) {
         e.preventDefault();
         const user = document.getElementById('loginUser').value;
         const pass = document.getElementById('loginPass').value;
-        const creds = getCredentials();
+        const creds = await getCredentials();
         if (user === creds.username && pass === creds.password) {
             sessionStorage.setItem('pinkAdminLoggedIn', 'true');
             document.getElementById('loginScreen').classList.add('hidden');
@@ -452,6 +459,7 @@
         if (pass !== confirm) { showToast('Les mots de passe ne correspondent pas', 'error'); return; }
         if (pass.length < 4) { showToast('Mot de passe trop court (min 4 caracteres)', 'error'); return; }
         localStorage.setItem('pinkAgencyAdminCreds', JSON.stringify({ username: user, password: pass }));
+        if (supabase) { supabase.from('admin_creds').upsert({ id: 1, username: user, password: pass, updated_at: new Date().toISOString() }); }
         document.getElementById('acc_password').value = '';
         document.getElementById('acc_passwordConfirm').value = '';
         showToast('Identifiants mis a jour !', 'success');
@@ -541,21 +549,25 @@
     // ======================== SUPABASE ========================
     const SUPABASE_URL = 'https://cqurzyjceftqkzbikrmt.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxdXJ6eWpjZWZ0cWt6Ymlrcm10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTc3ODksImV4cCI6MjA4NjczMzc4OX0.k8DFzLeQgDJnPDq_V78RqirQpFyAScilFMingQVX3r4';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let sb = null;
+    try { sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch(e) { console.error('Supabase init failed:', e); }
+    const supabase = sb;
 
     // ======================== STATE ========================
     let config = {};
 
     async function loadConfig() {
         // Try Supabase first
-        try {
-            const { data, error } = await supabase.from('site_config').select('config').eq('id', 1).single();
-            if (!error && data && data.config && Object.keys(data.config).length > 0) {
-                config = data.config;
-                ensureDefaults();
-                return;
-            }
-        } catch(e) { console.warn('Supabase load failed, falling back to localStorage', e); }
+        if (supabase) {
+            try {
+                const { data, error } = await supabase.from('site_config').select('config').eq('id', 1).single();
+                if (!error && data && data.config && Object.keys(data.config).length > 0) {
+                    config = data.config;
+                    ensureDefaults();
+                    return;
+                }
+            } catch(e) { console.warn('Supabase load failed, falling back to localStorage', e); }
+        }
         // Fallback to localStorage
         const saved = localStorage.getItem('pinkAgencyConfig');
         config = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_CONFIG));
