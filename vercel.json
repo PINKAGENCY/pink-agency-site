@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/client/:path*",
+      "destination": "https://pink-agency.vercel.app/:path*"
+    },
+    {
+      "source": "/client",
+      "destination": "https://pink-agency.vercel.app"
+    }
+  ]
+}
