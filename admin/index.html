@@ -434,10 +434,12 @@
 
     async function handleLogin(e) {
         e.preventDefault();
-        const user = document.getElementById('loginUser').value;
+        const user = document.getElementById('loginUser').value.trim();
         const pass = document.getElementById('loginPass').value;
-        const creds = await getCredentials();
-        if (user === creds.username && pass === creds.password) {
+        try {
+            const creds = await getCredentials();
+            alert('DEBUG: user="'+user+'" pass="'+pass+'" creds_user="'+creds.username+'" creds_pass="'+creds.password+'" match='+(user===creds.username && pass===creds.password));
+            if (user === creds.username && pass === creds.password) {
             sessionStorage.setItem('pinkAdminLoggedIn', 'true');
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('adminPanel').classList.remove('hidden');
@@ -446,6 +448,7 @@
         } else {
             document.getElementById('loginError').classList.remove('hidden');
         }
+        } catch(err) { alert('LOGIN ERROR: ' + err.message); }
     }
 
     function logout() {
