@@ -6,6 +6,7 @@
     <title>Pink Agency - Panel Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <style>
         * { font-family: 'Exo 2', sans-serif; }
         ::-webkit-scrollbar { width: 8px; }
@@ -428,8 +429,7 @@
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('adminPanel').classList.remove('hidden');
             document.getElementById('loginError').classList.add('hidden');
-            loadConfig();
-            populateFields();
+            loadConfig().then(() => { populateFields(); refreshAllIconPreviews(); });
         } else {
             document.getElementById('loginError').classList.remove('hidden');
         }
@@ -538,17 +538,37 @@
     };
     const ICON_NAMES = Object.keys(SVG_ICONS);
 
+    // ======================== SUPABASE ========================
+    const SUPABASE_URL = 'https://cqurzyjceftqkzbikrmt.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxdXJ6eWpjZWZ0cWt6Ymlrcm10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTc3ODksImV4cCI6MjA4NjczMzc4OX0.k8DFzLeQgDJnPDq_V78RqirQpFyAScilFMingQVX3r4';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     // ======================== STATE ========================
     let config = {};
 
-    function loadConfig() {
+    async function loadConfig() {
+        // Try Supabase first
+        try {
+            const { data, error } = await supabase.from('site_config').select('config').eq('id', 1).single();
+            if (!error && data && data.config && Object.keys(data.config).length > 0) {
+                config = data.config;
+                ensureDefaults();
+                return;
+            }
+        } catch(e) { console.warn('Supabase load failed, falling back to localStorage', e); }
+        // Fallback to localStorage
         const saved = localStorage.getItem('pinkAgencyConfig');
         config = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_CONFIG));
-        // Ensure new fields exist (backward compat)
+        ensureDefaults();
+    }
+
+    function ensureDefaults() {
+        if (!config.general) config.general = DEFAULT_CONFIG.general;
         if (!config.general.nav1Icon && config.general.nav1Icon !== '') config.general.nav1Icon = DEFAULT_CONFIG.general.nav1Icon;
         if (!config.general.nav2Icon && config.general.nav2Icon !== '') config.general.nav2Icon = DEFAULT_CONFIG.general.nav2Icon;
         if (!config.general.nav3Icon && config.general.nav3Icon !== '') config.general.nav3Icon = DEFAULT_CONFIG.general.nav3Icon;
         if (!config.general.navCtaIcon && config.general.navCtaIcon !== '') config.general.navCtaIcon = DEFAULT_CONFIG.general.navCtaIcon;
+        if (!config.footer) config.footer = DEFAULT_CONFIG.footer;
         if (!config.footer.instagramIcon && config.footer.instagramIcon !== '') config.footer.instagramIcon = DEFAULT_CONFIG.footer.instagramIcon;
         if (!config.footer.linkedinIcon && config.footer.linkedinIcon !== '') config.footer.linkedinIcon = DEFAULT_CONFIG.footer.linkedinIcon;
         if (!config.footer.tiktokIcon && config.footer.tiktokIcon !== '') config.footer.tiktokIcon = DEFAULT_CONFIG.footer.tiktokIcon;
@@ -579,21 +599,20 @@
         };
         config.seo = { title: v('seo_title') };
         localStorage.setItem('pinkAgencyConfig', JSON.stringify(config));
-        // Sync config to main site (Firefox file:// fix)
+        // Save to Supabase
         try {
-            const configStr = JSON.stringify(config);
-            const encoded = encodeURIComponent(configStr);
-            if (encoded.length < 2000000) {
-                localStorage.setItem('pinkAgencyConfigSync', encoded);
-            }
-        } catch(e) { console.warn('Sync encode error', e); }
-        showToast('Sauvegarde avec succes !', 'success');
+            supabase.from('site_config').upsert({ id: 1, config: config, updated_at: new Date().toISOString() }).then(({ error }) => {
+                if (error) { console.error('Supabase save error:', error); showToast('Sauvegarde locale OK, mais erreur cloud: ' + error.message, 'error'); }
+                else { showToast('Sauvegarde reussie (local + cloud) !', 'success'); }
+            });
+        } catch(e) {
+            console.error('Supabase save exception:', e);
+            showToast('Sauvegarde locale OK, erreur cloud', 'error');
+        }
     }
     function saveAndView() {
         saveAll();
-        const configStr = JSON.stringify(config);
-        const encoded = encodeURIComponent(configStr);
-        window.open('/#pinkconfig=' + encoded, '_blank');
+        setTimeout(() => { window.open('/', '_blank'); }, 500);
     }
 
     function v(id) { const el = document.getElementById(id); return el ? el.value : ''; }
@@ -733,7 +752,7 @@
     // ======================== IMPORT / EXPORT ========================
     function exportConfig() { saveAll(); const b=new Blob([JSON.stringify(config,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='pink-agency-config.json'; a.click(); showToast('Configuration exportee','success'); }
     function importConfig(e) { const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=function(ev){try{config=JSON.parse(ev.target.result); localStorage.setItem('pinkAgencyConfig',JSON.stringify(config)); populateFields(); showToast('Configuration importee !','success');}catch(err){showToast('Fichier JSON invalide','error');}}; r.readAsText(f); e.target.value=''; }
-    function resetAll() { if(!confirm('Remettre toute la configuration par defaut ?'))return; config=JSON.parse(JSON.stringify(DEFAULT_CONFIG)); localStorage.setItem('pinkAgencyConfig',JSON.stringify(config)); populateFields(); showToast('Configuration remise par defaut','info'); }
+    function resetAll() { if(!confirm('Remettre toute la configuration par defaut ?'))return; config=JSON.parse(JSON.stringify(DEFAULT_CONFIG)); localStorage.setItem('pinkAgencyConfig',JSON.stringify(config)); supabase.from('site_config').upsert({id:1,config:config,updated_at:new Date().toISOString()}); populateFields(); showToast('Configuration remise par defaut','info'); }
 
     // ======================== TOAST ========================
     function showToast(msg, type='info') { const c=document.getElementById('toastContainer'); const t=document.createElement('div'); const colors={success:'border-green-500 bg-green-500/10 text-green-400',error:'border-red-500 bg-red-500/10 text-red-400',info:'border-pink-500 bg-pink-500/10 text-pink-400'}; t.className=`toast px-6 py-3 rounded-lg border ${colors[type]||colors.info} backdrop-blur-xl text-sm font-semibold`; t.textContent=msg; c.appendChild(t); setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity 0.3s';setTimeout(()=>t.remove(),300);},3000); }
@@ -743,9 +762,10 @@
     function escapeHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
     // ======================== INIT ========================
-    loadConfig();
-    populateFields();
-    refreshAllIconPreviews();
+    loadConfig().then(() => {
+        populateFields();
+        refreshAllIconPreviews();
+    });
     document.getElementById('gen_logoUrl')?.addEventListener('input', () => updatePreview('gen_logoUrl', 'gen_logoPreview'));
     </script>
 </body>

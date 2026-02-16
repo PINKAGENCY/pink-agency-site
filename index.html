@@ -6,6 +6,7 @@
     <title id="pageTitle">Pink Agency - Agence Digitale</title>
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <style>
         * { font-family: 'Exo 2', sans-serif; }
         html { scroll-behavior: smooth; }
@@ -244,6 +245,10 @@
         };
 
         // ======================== LOAD CONFIG ========================
+        const SUPABASE_URL = 'https://cqurzyjceftqkzbikrmt.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxdXJ6eWpjZWZ0cWt6Ymlrcm10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTc3ODksImV4cCI6MjA4NjczMzc4OX0.k8DFzLeQgDJnPDq_V78RqirQpFyAScilFMingQVX3r4';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         function loadConfig() {
             // Check URL hash for config from admin panel (Firefox file:// fix)
             if (location.hash.startsWith('#pinkconfig=')) {
@@ -257,6 +262,16 @@
             }
             const saved = localStorage.getItem('pinkAgencyConfig');
             return saved ? JSON.parse(saved) : null;
+        }
+
+        async function loadConfigFromSupabase() {
+            try {
+                const { data, error } = await supabaseClient.from('site_config').select('config').eq('id', 1).single();
+                if (!error && data && data.config && Object.keys(data.config).length > 0) {
+                    return data.config;
+                }
+            } catch(e) { console.warn('Supabase load failed', e); }
+            return null;
         }
 
         function getServiceIcon(svc) {
@@ -489,12 +504,20 @@
         }
 
         // ======================== INIT ========================
+        // First apply localStorage/hash config or defaults immediately
         const cfg = loadConfig();
         if (cfg) {
             applyConfig();
         } else {
             applyDefaults();
         }
+        // Then try Supabase (async) and update if newer data exists
+        loadConfigFromSupabase().then(cloudCfg => {
+            if (cloudCfg) {
+                localStorage.setItem('pinkAgencyConfig', JSON.stringify(cloudCfg));
+                applyConfig();
+            }
+        });
 
         // Menu mobile
         const menuToggle = document.getElementById('menuToggle');
