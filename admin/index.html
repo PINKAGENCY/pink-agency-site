@@ -21,6 +21,18 @@
         @keyframes slideToast { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         textarea { resize: vertical; }
         .login-bg { background: radial-gradient(ellipse at center, rgba(236,72,153,0.15) 0%, transparent 70%); }
+        /* Mobile menu */
+        .mobile-tabs { display: none; }
+        @media (max-width: 768px) {
+            .desktop-sidebar { display: none; }
+            .mobile-tabs { display: flex; overflow-x: auto; gap: 6px; padding: 8px 0; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+            .mobile-tabs::-webkit-scrollbar { display: none; }
+            .mobile-tabs button { white-space: nowrap; flex-shrink: 0; font-size: 12px; padding: 8px 14px; }
+            .admin-layout { flex-direction: column; }
+            .field-group { padding: 16px !important; }
+            .header-actions { gap: 6px; }
+            .header-actions button, .header-actions a { font-size: 11px; padding: 6px 10px; }
+        }
     </style>
 </head>
 <body class="bg-gray-950 text-white min-h-screen">
@@ -54,26 +66,49 @@
     <div id="adminPanel" class="hidden">
         <!-- Header -->
         <header class="bg-black/80 backdrop-blur-xl border-b border-pink-500/30 sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-                <div class="flex items-center gap-3">
+            <div class="max-w-7xl mx-auto px-3 sm:px-4 py-3 flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2 flex-shrink-0">
                     <div class="w-8 h-8 bg-gradient-to-br from-pink-500 to-pink-700 rounded-lg flex items-center justify-center text-sm font-bold">PA</div>
-                    <h1 class="text-xl font-bold bg-gradient-to-r from-pink-400 to-white bg-clip-text text-transparent">Panel Admin</h1>
+                    <h1 class="text-lg sm:text-xl font-bold bg-gradient-to-r from-pink-400 to-white bg-clip-text text-transparent hidden sm:block">Panel Admin</h1>
                 </div>
-                <div class="flex items-center gap-3 flex-wrap">
-                    <button onclick="resetAll()" class="px-4 py-2 text-sm border border-red-500/30 text-red-400 rounded-lg hover:bg-red-500/10 transition-all">Reset tout</button>
-                    <button onclick="exportConfig()" class="px-4 py-2 text-sm border border-pink-500/30 text-pink-400 rounded-lg hover:bg-pink-500/10 transition-all">Exporter JSON</button>
-                    <button onclick="document.getElementById('importInput').click()" class="px-4 py-2 text-sm border border-pink-500/30 text-pink-400 rounded-lg hover:bg-pink-500/10 transition-all">Importer JSON</button>
+                <div class="header-actions flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
+                    <button onclick="resetAll()" class="hidden sm:inline-block px-4 py-2 text-sm border border-red-500/30 text-red-400 rounded-lg hover:bg-red-500/10 transition-all">Reset tout</button>
+                    <button onclick="exportConfig()" class="hidden sm:inline-block px-4 py-2 text-sm border border-pink-500/30 text-pink-400 rounded-lg hover:bg-pink-500/10 transition-all">Exporter</button>
+                    <button onclick="document.getElementById('importInput').click()" class="hidden sm:inline-block px-4 py-2 text-sm border border-pink-500/30 text-pink-400 rounded-lg hover:bg-pink-500/10 transition-all">Importer</button>
                     <input type="file" id="importInput" accept=".json" class="hidden" onchange="importConfig(event)">
-                    <button onclick="saveAll()" class="px-6 py-2 text-sm bg-gradient-to-r from-pink-600 to-pink-500 rounded-lg hover:shadow-lg hover:shadow-pink-500/30 transition-all font-semibold">Sauvegarder</button>
-                    <button onclick="saveAndView()" class="px-5 py-2 text-sm bg-gradient-to-r from-green-600 to-green-500 rounded-lg hover:shadow-lg hover:shadow-green-500/30 transition-all font-semibold">Sauvegarder & Voir le site</button>
-                    <button onclick="logout()" class="px-4 py-2 text-sm border border-gray-600 text-gray-400 rounded-lg hover:bg-gray-700/30 transition-all">Deconnexion</button>
+                    <button onclick="saveAll()" class="px-4 sm:px-6 py-2 text-xs sm:text-sm bg-gradient-to-r from-pink-600 to-pink-500 rounded-lg hover:shadow-lg hover:shadow-pink-500/30 transition-all font-semibold">Sauvegarder</button>
+                    <button onclick="saveAndView()" class="px-3 sm:px-5 py-2 text-xs sm:text-sm bg-gradient-to-r from-green-600 to-green-500 rounded-lg hover:shadow-lg hover:shadow-green-500/30 transition-all font-semibold">Voir le site</button>
+                    <button onclick="toggleMobileMenu()" class="sm:hidden px-3 py-2 text-sm border border-gray-600 text-gray-400 rounded-lg hover:bg-gray-700/30 transition-all">...</button>
+                    <button onclick="logout()" class="hidden sm:inline-block px-4 py-2 text-sm border border-gray-600 text-gray-400 rounded-lg hover:bg-gray-700/30 transition-all">Deconnexion</button>
                 </div>
             </div>
         </header>
 
-        <div class="max-w-7xl mx-auto px-4 py-6 flex gap-6">
-            <!-- Sidebar Tabs -->
-            <nav class="w-56 flex-shrink-0">
+        <!-- Mobile dropdown menu -->
+        <div id="mobileMenu" class="hidden bg-gray-900 border-b border-pink-500/20 px-4 py-3 sm:hidden">
+            <div class="flex flex-wrap gap-2">
+                <button onclick="resetAll();closeMobileMenu()" class="px-3 py-2 text-xs border border-red-500/30 text-red-400 rounded-lg">Reset tout</button>
+                <button onclick="exportConfig();closeMobileMenu()" class="px-3 py-2 text-xs border border-pink-500/30 text-pink-400 rounded-lg">Exporter</button>
+                <button onclick="document.getElementById('importInput').click();closeMobileMenu()" class="px-3 py-2 text-xs border border-pink-500/30 text-pink-400 rounded-lg">Importer</button>
+                <button onclick="logout()" class="px-3 py-2 text-xs border border-gray-600 text-gray-400 rounded-lg">Deconnexion</button>
+            </div>
+        </div>
+
+        <!-- Mobile horizontal tabs -->
+        <div class="mobile-tabs px-3">
+            <button onclick="switchTab('general')" class="tab-btn px-4 py-2 rounded-lg font-semibold transition-all tab-active" data-tab="general">General</button>
+            <button onclick="switchTab('hero')" class="tab-btn px-4 py-2 rounded-lg font-semibold transition-all text-gray-400" data-tab="hero">Hero</button>
+            <button onclick="switchTab('services')" class="tab-btn px-4 py-2 rounded-lg font-semibold transition-all text-gray-400" data-tab="services">Services</button>
+            <button onclick="switchTab('about')" class="tab-btn px-4 py-2 rounded-lg font-semibold transition-all text-gray-400" data-tab="about">A propos</button>
+            <button onclick="switchTab('contact')" class="tab-btn px-4 py-2 rounded-lg font-semibold transition-all text-gray-400" data-tab="contact">Contact</button>
+            <button onclick="switchTab('footer')" class="tab-btn px-4 py-2 rounded-lg font-semibold transition-all text-gray-400" data-tab="footer">Footer</button>
+            <button onclick="switchTab('seo')" class="tab-btn px-4 py-2 rounded-lg font-semibold transition-all text-gray-400" data-tab="seo">SEO</button>
+            <button onclick="switchTab('account')" class="tab-btn px-4 py-2 rounded-lg font-semibold transition-all text-gray-400" data-tab="account">Compte</button>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 admin-layout flex gap-6">
+            <!-- Sidebar Tabs (desktop only) -->
+            <nav class="desktop-sidebar w-56 flex-shrink-0">
                 <div class="sticky top-20 space-y-1">
                     <button onclick="switchTab('general')" class="tab-btn w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-pink-500/10 tab-active" data-tab="general">General / Header</button>
                     <button onclick="switchTab('hero')" class="tab-btn w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-pink-500/10 text-gray-400" data-tab="hero">Section Hero</button>
@@ -119,7 +154,7 @@
                             <h3 class="text-lg font-semibold text-pink-400 mb-4">Navigation</h3>
                             <p class="text-xs text-gray-500 mb-4">Icone = emoji, URL d'image, ou upload depuis votre PC. Laissez vide pour aucune icone.</p>
                             <div class="space-y-5">
-                                <div class="grid grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm text-gray-400 mb-1">Lien 1 - Icone</label>
                                         <div class="flex gap-2 items-center">
@@ -133,7 +168,7 @@
                                         <input type="text" id="gen_nav1" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="Accueil">
                                     </div>
                                 </div>
-                                <div class="grid grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm text-gray-400 mb-1">Lien 2 - Icone</label>
                                         <div class="flex gap-2 items-center">
@@ -147,7 +182,7 @@
                                         <input type="text" id="gen_nav2" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="Nos Services">
                                     </div>
                                 </div>
-                                <div class="grid grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm text-gray-400 mb-1">Lien 3 - Icone</label>
                                         <div class="flex gap-2 items-center">
@@ -161,7 +196,7 @@
                                         <input type="text" id="gen_nav3" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="Qui sommes-nous">
                                     </div>
                                 </div>
-                                <div class="grid grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm text-gray-400 mb-1">CTA - Icone</label>
                                         <div class="flex gap-2 items-center">
@@ -191,7 +226,7 @@
                         </div>
                         <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
                             <h3 class="text-lg font-semibold text-pink-400 mb-4">Boutons</h3>
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div><label class="block text-sm text-gray-400 mb-1">Bouton principal - Texte</label><input type="text" id="hero_btn1Text" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></div>
                                 <div><label class="block text-sm text-gray-400 mb-1">Bouton principal - Lien</label><input type="text" id="hero_btn1Link" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="#services"></div>
                                 <div><label class="block text-sm text-gray-400 mb-1">Bouton secondaire - Texte</label><input type="text" id="hero_btn2Text" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></div>
@@ -228,7 +263,7 @@
                     <div class="space-y-6">
                         <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
                             <h3 class="text-lg font-semibold text-pink-400 mb-4">Titres</h3>
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div><label class="block text-sm text-gray-400 mb-1">Titre ligne 1</label><input type="text" id="about_title1" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="Qui"></div>
                                 <div><label class="block text-sm text-gray-400 mb-1">Titre ligne 2</label><input type="text" id="about_title2" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="sommes-nous ?"></div>
                             </div>
@@ -242,7 +277,7 @@
                         </div>
                         <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
                             <h3 class="text-lg font-semibold text-pink-400 mb-4">Statistiques</h3>
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div><label class="block text-sm text-gray-400 mb-1">Stat 1 - Chiffre</label><input type="text" id="about_stat1Num" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></div>
                                 <div><label class="block text-sm text-gray-400 mb-1">Stat 1 - Label</label><input type="text" id="about_stat1Label" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></div>
                                 <div><label class="block text-sm text-gray-400 mb-1">Stat 2 - Chiffre</label><input type="text" id="about_stat2Num" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></div>
@@ -595,9 +630,10 @@
         document.querySelectorAll('.tab-btn').forEach(el => { el.classList.remove('tab-active'); el.classList.add('text-gray-400'); });
         const tab = document.getElementById('tab-' + tabName);
         if (tab) { tab.classList.remove('hidden'); tab.classList.add('fade-in'); }
-        const btn = document.querySelector(`[data-tab="${tabName}"]`);
-        if (btn) { btn.classList.add('tab-active'); btn.classList.remove('text-gray-400'); }
+        document.querySelectorAll(`[data-tab="${tabName}"]`).forEach(btn => { btn.classList.add('tab-active'); btn.classList.remove('text-gray-400'); });
     }
+    function toggleMobileMenu() { document.getElementById('mobileMenu').classList.toggle('hidden'); }
+    function closeMobileMenu() { document.getElementById('mobileMenu').classList.add('hidden'); }
 
     // ======================== SERVICES ========================
     function renderServicesList() {
@@ -618,7 +654,7 @@
             + `<div><label class="block text-sm text-gray-400 mb-1">Icone</label><div class="flex gap-3 items-start"><select class="svc-icon-type bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-pink-500 focus:outline-none" onchange="toggleIconInput(${i},this.value)"><option value="svg" ${svc.iconType==='svg'?'selected':''}>Icone integree</option><option value="image" ${svc.iconType==='image'?'selected':''}>Image (URL/Upload)</option><option value="emoji" ${svc.iconType==='emoji'?'selected':''}>Emoji</option><option value="custom_svg" ${svc.iconType==='custom_svg'?'selected':''}>SVG personnalise</option></select><div class="svc-icon-input flex-1">${getIconInputHTML(i,svc)}</div><div class="svc-icon-preview w-16 h-16 flex items-center justify-center bg-gray-800 rounded-lg border border-gray-700">${getIconPreview(svc)}</div></div></div>`
             + `<div class="border-t border-gray-700 pt-4 mt-2"><label class="block text-sm text-pink-400 font-semibold mb-1">Image de fond</label><p class="text-xs text-gray-500 mb-3">Dimensions recommandees : <span class="text-pink-400/80">800x600 px</span> minimum (ratio 4:3). Pour un rendu optimal, utilisez des images en <span class="text-pink-400/80">1200x800 px</span> ou plus. Formats acceptes : JPG, PNG, WebP.</p>`
             + `<div class="flex gap-2 items-center mb-3"><input type="text" class="svc-bg-image flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" value="${escapeAttr(svc.bgImage)}" placeholder="URL de l'image ou uploader" oninput="updateBgPreview(${i})"><label class="px-3 py-2 bg-pink-600/20 border border-pink-500/30 rounded-lg text-xs text-pink-400 cursor-pointer hover:bg-pink-600/30 transition-all whitespace-nowrap">Upload<input type="file" accept="image/*" class="hidden" onchange="handleServiceBgUpload(event,${i})"></label>${svc.bgImage?`<button onclick="clearServiceBg(${i})" class="px-3 py-2 text-xs bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/30 whitespace-nowrap">Retirer</button>`:''}</div>`
-            + `<div class="grid grid-cols-2 gap-4 mb-3"><div><label class="block text-xs text-gray-500 mb-1">Transparence : <span class="svc-bg-opacity-val text-pink-400">${Math.round(svc.bgOpacity*100)}%</span></label><input type="range" class="svc-bg-opacity w-full accent-pink-500" min="0" max="100" value="${Math.round(svc.bgOpacity*100)}" oninput="this.closest('[data-service-index]').querySelector('.svc-bg-opacity-val').textContent=this.value+'%'; updateBgPreview(${i})"></div><div><label class="block text-xs text-gray-500 mb-1">Flou : <span class="svc-bg-blur-val text-pink-400">${svc.bgBlur}px</span></label><input type="range" class="svc-bg-blur w-full accent-pink-500" min="0" max="20" value="${svc.bgBlur}" oninput="this.closest('[data-service-index]').querySelector('.svc-bg-blur-val').textContent=this.value+'px'; updateBgPreview(${i})"></div></div>`
+            + `<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3"><div><label class="block text-xs text-gray-500 mb-1">Transparence : <span class="svc-bg-opacity-val text-pink-400">${Math.round(svc.bgOpacity*100)}%</span></label><input type="range" class="svc-bg-opacity w-full accent-pink-500" min="0" max="100" value="${Math.round(svc.bgOpacity*100)}" oninput="this.closest('[data-service-index]').querySelector('.svc-bg-opacity-val').textContent=this.value+'%'; updateBgPreview(${i})"></div><div><label class="block text-xs text-gray-500 mb-1">Flou : <span class="svc-bg-blur-val text-pink-400">${svc.bgBlur}px</span></label><input type="range" class="svc-bg-blur w-full accent-pink-500" min="0" max="20" value="${svc.bgBlur}" oninput="this.closest('[data-service-index]').querySelector('.svc-bg-blur-val').textContent=this.value+'px'; updateBgPreview(${i})"></div></div>`
             + `<div class="svc-bg-preview relative w-full h-24 rounded-lg border border-gray-700 overflow-hidden bg-gray-800">${svc.bgImage ? `<div class="absolute inset-0" style="${bgPreviewStyle}"></div><div class="absolute inset-0 flex items-center justify-center text-xs text-white font-semibold z-10">Apercu</div>` : '<div class="flex items-center justify-center h-full text-xs text-gray-600">Aucune image</div>'}</div>`
             + `</div></div>`;
             list.appendChild(div);
