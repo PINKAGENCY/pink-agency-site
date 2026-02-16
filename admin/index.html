@@ -48,7 +48,7 @@
                 <h1 class="text-2xl font-bold bg-gradient-to-r from-pink-400 to-white bg-clip-text text-transparent">Panel Admin</h1>
                 <p class="text-sm text-gray-400 mt-2">Connectez-vous pour acceder au panneau</p>
             </div>
-            <form onsubmit="handleLogin(event)" class="space-y-4">
+            <form id="loginForm" class="space-y-4">
                 <div>
                     <label class="block text-sm text-gray-400 mb-1">Identifiant</label>
                     <input type="text" id="loginUser" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm focus:border-pink-500 focus:outline-none transition-colors" placeholder="Identifiant" autocomplete="username">
@@ -58,7 +58,7 @@
                     <input type="password" id="loginPass" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm focus:border-pink-500 focus:outline-none transition-colors" placeholder="Mot de passe" autocomplete="current-password">
                 </div>
                 <div id="loginError" class="text-red-400 text-sm hidden">Identifiant ou mot de passe incorrect</div>
-                <button type="submit" class="w-full py-3 bg-gradient-to-r from-pink-600 to-pink-500 rounded-lg font-semibold hover:shadow-lg hover:shadow-pink-500/30 transition-all">Se connecter</button>
+                <button type="submit" id="loginBtn" class="w-full py-3 bg-gradient-to-r from-pink-600 to-pink-500 rounded-lg font-semibold hover:shadow-lg hover:shadow-pink-500/30 transition-all">Se connecter</button>
             </form>
         </div>
     </div>
@@ -441,8 +441,8 @@
     }
 
     function handleLogin(e) {
-        e.preventDefault();
-        var btn = e.target.querySelector('button[type="submit"]');
+        if (e && e.preventDefault) e.preventDefault();
+        var btn = document.getElementById('loginBtn');
         var errEl = document.getElementById('loginError');
         var user = document.getElementById('loginUser').value.trim();
         var pass = document.getElementById('loginPass').value;
@@ -833,11 +833,25 @@
     window.handleFooterIconUpload = handleFooterIconUpload;
 
     // ======================== INIT ========================
+    // Attach login form event listener directly (not via inline onsubmit)
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        handleLogin(e);
+    });
+
+    // Also attach click on button as fallback
+    document.getElementById('loginBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        handleLogin(e);
+    });
+
     loadConfig().then(async () => {
         await populateFields();
         refreshAllIconPreviews();
     }).catch(err => console.error('Init error:', err));
     document.getElementById('gen_logoUrl')?.addEventListener('input', () => updatePreview('gen_logoUrl', 'gen_logoPreview'));
+
+    console.log('Admin script fully loaded. handleLogin type:', typeof handleLogin);
     </script>
 </body>
 </html>
