@@ -221,8 +221,16 @@
                     <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-pink-400 to-white bg-clip-text text-transparent">Section Hero</h2>
                     <div class="space-y-6">
                         <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-pink-400 mb-4">Image Header</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                                <div><label class="block text-sm text-gray-400 mb-1">URL de l'image</label><input type="text" id="hero_image" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="https://..."></div>
+                                <div><label class="block text-sm text-gray-400 mb-1">Transparence (0 à 1)</label><input type="number" id="hero_imageOpacity" min="0" max="1" step="0.05" value="1" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></div>
+                            </div>
+                            <div id="hero_imagePreview" class="mb-4"></div>
+                        </div>
+                        <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
                             <h3 class="text-lg font-semibold text-pink-400 mb-4">Texte principal</h3>
-                            <div><label class="block text-sm text-gray-400 mb-1">Description sous la courbe</label>
+                            <div><label class="block text-sm text-gray-400 mb-1">Description</label>
                             <textarea id="hero_description" rows="3" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none transition-colors" placeholder="Votre partenaire digital..."></textarea></div>
                         </div>
                         <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
@@ -626,7 +634,7 @@
             nav3: v('gen_nav3'), nav3Icon: v('gen_nav3Icon'),
             navCta: v('gen_navCta'), navCtaIcon: v('gen_navCtaIcon')
         };
-        config.hero = { description: v('hero_description'), btn1Text: v('hero_btn1Text'), btn1Link: v('hero_btn1Link'), btn2Text: v('hero_btn2Text'), btn2Link: v('hero_btn2Link') };
+        config.hero = { description: v('hero_description'), btn1Text: v('hero_btn1Text'), btn1Link: v('hero_btn1Link'), btn2Text: v('hero_btn2Text'), btn2Link: v('hero_btn2Link'), image: v('hero_image'), imageOpacity: parseFloat(v('hero_imageOpacity')) || 1 };
         config.services.introText = v('svc_introText');
         config.services.sectionTitle = v('svc_sectionTitle');
         config.services.sectionSubtitle = v('svc_sectionSubtitle');
@@ -668,7 +676,7 @@
         sv('gen_nav3', config.general.nav3); sv('gen_nav3Icon', config.general.nav3Icon);
         sv('gen_navCta', config.general.navCta); sv('gen_navCtaIcon', config.general.navCtaIcon);
         updatePreview('gen_logoUrl', 'gen_logoPreview');
-        sv('hero_description', config.hero.description); sv('hero_btn1Text', config.hero.btn1Text); sv('hero_btn1Link', config.hero.btn1Link); sv('hero_btn2Text', config.hero.btn2Text); sv('hero_btn2Link', config.hero.btn2Link);
+        sv('hero_description', config.hero.description); sv('hero_btn1Text', config.hero.btn1Text); sv('hero_btn1Link', config.hero.btn1Link); sv('hero_btn2Text', config.hero.btn2Text); sv('hero_btn2Link', config.hero.btn2Link); sv('hero_image', config.hero.image || ''); sv('hero_imageOpacity', config.hero.imageOpacity !== undefined ? config.hero.imageOpacity : 1); if(config.hero.image){document.getElementById('hero_imagePreview').innerHTML='<img src="'+config.hero.image+'" class="w-32 h-20 object-cover rounded-lg border border-gray-700" style="opacity:'+((config.hero.imageOpacity!==undefined)?config.hero.imageOpacity:1)+'">';}
         sv('svc_introText', config.services.introText); sv('svc_sectionTitle', config.services.sectionTitle); sv('svc_sectionSubtitle', config.services.sectionSubtitle);
         renderServicesList();
         sv('about_title1', config.about.title1); sv('about_title2', config.about.title2); sv('about_para1', config.about.para1); sv('about_para2', config.about.para2);
