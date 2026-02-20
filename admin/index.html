@@ -143,6 +143,11 @@
                                         </label>
                                     </div>
                                     <div class="mt-3" id="gen_logoPreview"></div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+                                        <div><label class="block text-xs text-gray-500 mb-1">Taille : <span id="gen_logoSizeVal" class="text-pink-400">160px</span></label><input type="range" id="gen_logoSize" class="w-full accent-pink-500" min="60" max="400" value="160" oninput="document.getElementById('gen_logoSizeVal').textContent=this.value+'px'"></div>
+                                        <div><label class="block text-xs text-gray-500 mb-1">Transparence : <span id="gen_logoOpacityVal" class="text-pink-400">100%</span></label><input type="range" id="gen_logoOpacity" class="w-full accent-pink-500" min="0" max="100" value="100" oninput="document.getElementById('gen_logoOpacityVal').textContent=this.value+'%'"></div>
+                                        <div><label class="block text-xs text-gray-500 mb-1">Flou : <span id="gen_logoBlurVal" class="text-pink-400">0px</span></label><input type="range" id="gen_logoBlur" class="w-full accent-pink-500" min="0" max="20" value="0" oninput="document.getElementById('gen_logoBlurVal').textContent=this.value+'px'"></div>
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="block text-sm text-gray-400 mb-1">Nom de l'agence</label>
@@ -631,7 +636,7 @@
 
     function saveAll() {
         config.general = {
-            logoUrl: v('gen_logoUrl'), brandName: v('gen_brandName'),
+            logoUrl: v('gen_logoUrl'), logoSize: parseInt(document.getElementById('gen_logoSize').value), logoOpacity: parseInt(document.getElementById('gen_logoOpacity').value)/100, logoBlur: parseInt(document.getElementById('gen_logoBlur').value), brandName: v('gen_brandName'),
             nav1: v('gen_nav1'), nav1Icon: v('gen_nav1Icon'),
             nav2: v('gen_nav2'), nav2Icon: v('gen_nav2Icon'),
             nav3: v('gen_nav3'), nav3Icon: v('gen_nav3Icon'),
@@ -674,6 +679,9 @@
 
     async function populateFields() {
         sv('gen_logoUrl', config.general.logoUrl); sv('gen_brandName', config.general.brandName);
+        var ls=config.general.logoSize||160; document.getElementById('gen_logoSize').value=ls; document.getElementById('gen_logoSizeVal').textContent=ls+'px';
+        var lo=config.general.logoOpacity!==undefined?Math.round(config.general.logoOpacity*100):100; document.getElementById('gen_logoOpacity').value=lo; document.getElementById('gen_logoOpacityVal').textContent=lo+'%';
+        var lb=config.general.logoBlur||0; document.getElementById('gen_logoBlur').value=lb; document.getElementById('gen_logoBlurVal').textContent=lb+'px';
         sv('gen_nav1', config.general.nav1); sv('gen_nav1Icon', config.general.nav1Icon);
         sv('gen_nav2', config.general.nav2); sv('gen_nav2Icon', config.general.nav2Icon);
         sv('gen_nav3', config.general.nav3); sv('gen_nav3Icon', config.general.nav3Icon);

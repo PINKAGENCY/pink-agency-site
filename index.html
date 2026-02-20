@@ -597,6 +597,12 @@
                     document.getElementById('heroLogo').src = g.logoUrl;
                     document.getElementById('footerLogo').src = g.logoUrl;
                 }
+                var hl = document.getElementById('heroLogo');
+                var hlWrap = hl.parentElement;
+                var sz = g.logoSize || 160;
+                hlWrap.style.width = sz + 'px'; hlWrap.style.height = sz + 'px';
+                hl.style.opacity = g.logoOpacity !== undefined ? g.logoOpacity : 1;
+                hl.style.filter = 'drop-shadow(0 0 30px rgba(236,72,153,0.5))' + (g.logoBlur ? ' blur('+g.logoBlur+'px)' : '');
                 if (g.brandName) {
                     document.getElementById('headerBrand').textContent = g.brandName;
                     document.getElementById('footerBrand').textContent = g.brandName;
