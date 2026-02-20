@@ -221,12 +221,15 @@
                     <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-pink-400 to-white bg-clip-text text-transparent">Section Hero</h2>
                     <div class="space-y-6">
                         <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
-                            <h3 class="text-lg font-semibold text-pink-400 mb-4">Image Header</h3>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                                <div><label class="block text-sm text-gray-400 mb-1">URL de l'image</label><input type="text" id="hero_image" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="https://..."></div>
-                                <div><label class="block text-sm text-gray-400 mb-1">Transparence (0 à 1)</label><input type="number" id="hero_imageOpacity" min="0" max="1" step="0.05" value="1" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></div>
+                            <h3 class="text-lg font-semibold text-pink-400 mb-1">Image Header</h3>
+                            <p class="text-xs text-gray-500 mb-3">Dimensions recommandees : <span class="text-pink-400/80">800x600 px</span> minimum (ratio 4:3). Pour un rendu optimal, utilisez des images en <span class="text-pink-400/80">1200x800 px</span> ou plus. Formats acceptes : JPG, PNG, WebP.</p>
+                            <div class="flex gap-2 items-center mb-3">
+                                <input type="text" id="hero_image" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="URL de l'image ou uploader" oninput="updateHeroImagePreview()">
+                                <label class="px-3 py-2 bg-pink-600/20 border border-pink-500/30 rounded-lg text-xs text-pink-400 cursor-pointer hover:bg-pink-600/30 transition-all whitespace-nowrap">Upload<input type="file" accept="image/*" class="hidden" onchange="handleHeroImageUpload(event)"></label>
+                                <button onclick="clearHeroImage()" class="px-3 py-2 text-xs bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/30 whitespace-nowrap">Retirer</button>
                             </div>
-                            <div id="hero_imagePreview" class="mb-4"></div>
+                            <div class="mb-3"><label class="block text-xs text-gray-500 mb-1">Transparence : <span id="hero_opacityVal" class="text-pink-400">100%</span></label><input type="range" id="hero_imageOpacity" class="w-full accent-pink-500" min="0" max="100" value="100" oninput="document.getElementById('hero_opacityVal').textContent=this.value+'%'; updateHeroImagePreview()"></div>
+                            <div id="hero_imagePreview" class="relative w-full h-32 rounded-lg border border-gray-700 overflow-hidden bg-gray-800"><div class="flex items-center justify-center h-full text-xs text-gray-600">Aucune image</div></div>
                         </div>
                         <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
                             <h3 class="text-lg font-semibold text-pink-400 mb-4">Texte principal</h3>
@@ -634,7 +637,7 @@
             nav3: v('gen_nav3'), nav3Icon: v('gen_nav3Icon'),
             navCta: v('gen_navCta'), navCtaIcon: v('gen_navCtaIcon')
         };
-        config.hero = { description: v('hero_description'), btn1Text: v('hero_btn1Text'), btn1Link: v('hero_btn1Link'), btn2Text: v('hero_btn2Text'), btn2Link: v('hero_btn2Link'), image: v('hero_image'), imageOpacity: parseFloat(v('hero_imageOpacity')) || 1 };
+        config.hero = { description: v('hero_description'), btn1Text: v('hero_btn1Text'), btn1Link: v('hero_btn1Link'), btn2Text: v('hero_btn2Text'), btn2Link: v('hero_btn2Link'), image: v('hero_image'), imageOpacity: parseInt(document.getElementById('hero_imageOpacity').value) / 100 };
         config.services.introText = v('svc_introText');
         config.services.sectionTitle = v('svc_sectionTitle');
         config.services.sectionSubtitle = v('svc_sectionSubtitle');
@@ -676,7 +679,7 @@
         sv('gen_nav3', config.general.nav3); sv('gen_nav3Icon', config.general.nav3Icon);
         sv('gen_navCta', config.general.navCta); sv('gen_navCtaIcon', config.general.navCtaIcon);
         updatePreview('gen_logoUrl', 'gen_logoPreview');
-        sv('hero_description', config.hero.description); sv('hero_btn1Text', config.hero.btn1Text); sv('hero_btn1Link', config.hero.btn1Link); sv('hero_btn2Text', config.hero.btn2Text); sv('hero_btn2Link', config.hero.btn2Link); sv('hero_image', config.hero.image || ''); sv('hero_imageOpacity', config.hero.imageOpacity !== undefined ? config.hero.imageOpacity : 1); if(config.hero.image){document.getElementById('hero_imagePreview').innerHTML='<img src="'+config.hero.image+'" class="w-32 h-20 object-cover rounded-lg border border-gray-700" style="opacity:'+((config.hero.imageOpacity!==undefined)?config.hero.imageOpacity:1)+'">';}
+        sv('hero_description', config.hero.description); sv('hero_btn1Text', config.hero.btn1Text); sv('hero_btn1Link', config.hero.btn1Link); sv('hero_btn2Text', config.hero.btn2Text); sv('hero_btn2Link', config.hero.btn2Link); sv('hero_image', config.hero.image || ''); var hOpVal = config.hero.imageOpacity !== undefined ? Math.round(config.hero.imageOpacity * 100) : 100; document.getElementById('hero_imageOpacity').value = hOpVal; document.getElementById('hero_opacityVal').textContent = hOpVal + '%'; updateHeroImagePreview();
         sv('svc_introText', config.services.introText); sv('svc_sectionTitle', config.services.sectionTitle); sv('svc_sectionSubtitle', config.services.sectionSubtitle);
         renderServicesList();
         sv('about_title1', config.about.title1); sv('about_title2', config.about.title2); sv('about_para1', config.about.para1); sv('about_para2', config.about.para2);
@@ -766,6 +769,11 @@
     function handleImageUpload(e, inputId, previewId) { const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=function(ev){document.getElementById(inputId).value=ev.target.result; updatePreview(inputId,previewId);}; r.readAsDataURL(f); }
     function updatePreview(inputId, previewId) { const url=document.getElementById(inputId)?.value; const p=document.getElementById(previewId); if(!p)return; p.innerHTML=url?`<img src="${url}" class="preview-img rounded-lg border border-gray-700 mt-2" onerror="this.parentElement.innerHTML='<span class=\\'text-red-400 text-sm\\'>Image introuvable</span>'">`:''; }
 
+    // ======================== HERO IMAGE ========================
+    function handleHeroImageUpload(e) { var f=e.target.files[0]; if(!f)return; var r=new FileReader(); r.onload=function(ev){document.getElementById('hero_image').value=ev.target.result; updateHeroImagePreview();}; r.readAsDataURL(f); }
+    function clearHeroImage() { document.getElementById('hero_image').value=''; updateHeroImagePreview(); }
+    function updateHeroImagePreview() { var url=document.getElementById('hero_image').value; var op=parseInt(document.getElementById('hero_imageOpacity').value)/100; var p=document.getElementById('hero_imagePreview'); if(url){p.innerHTML='<div class="absolute inset-0" style="background-image:url(\''+url.replace(/'/g,"\\'")+'\');background-size:cover;background-position:center;opacity:'+op+';"></div><div class="absolute inset-0 flex items-center justify-center text-xs text-white font-semibold z-10">Apercu</div>';} else {p.innerHTML='<div class="flex items-center justify-center h-full text-xs text-gray-600">Aucune image</div>';} }
+
     // ======================== NAV ICON UPLOAD/PREVIEW ========================
     function isImageUrl(val) { return val && (val.startsWith('http://') || val.startsWith('https://') || val.startsWith('data:')); }
     function renderIconPreview(val) {
@@ -839,6 +847,9 @@
     window.handleImageUpload = handleImageUpload;
     window.handleNavIconUpload = handleNavIconUpload;
     window.handleFooterIconUpload = handleFooterIconUpload;
+    window.handleHeroImageUpload = handleHeroImageUpload;
+    window.clearHeroImage = clearHeroImage;
+    window.updateHeroImagePreview = updateHeroImagePreview;
 
     // ======================== INIT ========================
     // Attach login form event listener directly (not via inline onsubmit)
