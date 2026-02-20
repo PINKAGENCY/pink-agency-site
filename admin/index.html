@@ -652,16 +652,16 @@
             emailIcon: v('footer_emailIcon')
         };
         config.seo = { title: v('seo_title') };
-        localStorage.setItem('pinkAgencyConfig', JSON.stringify(config));
+        try { localStorage.setItem('pinkAgencyConfig', JSON.stringify(config)); } catch(e) { console.warn('localStorage quota exceeded, using Supabase only'); }
         // Save to Supabase
         try {
             sb.from('site_config').upsert({ id: 1, config: config, updated_at: new Date().toISOString() }).then(({ error }) => {
-                if (error) { console.error('Supabase save error:', error); showToast('Sauvegarde locale OK, mais erreur cloud: ' + error.message, 'error'); }
-                else { showToast('Sauvegarde reussie (local + cloud) !', 'success'); }
+                if (error) { console.error('Supabase save error:', error); showToast('Erreur cloud: ' + error.message, 'error'); }
+                else { showToast('Sauvegarde reussie !', 'success'); }
             });
         } catch(e) {
             console.error('Supabase save exception:', e);
-            showToast('Sauvegarde locale OK, erreur cloud', 'error');
+            showToast('Erreur de sauvegarde', 'error');
         }
     }
     function saveAndView() {
@@ -751,7 +751,7 @@
     function toggleIconInput(i, type) { config.services.items[i].iconType = type; config.services.items[i].iconData = type==='svg'?ICON_NAMES[0]:''; renderServicesList(); }
     function updateServiceIconPreview(i) { const item = document.querySelector(`[data-service-index="${i}"]`); if(!item)return; const d=item.querySelector('.svc-icon-data'); if(d){config.services.items[i].iconData=d.value; const p=item.querySelector('.svc-icon-preview'); if(p)p.innerHTML=getIconPreview(config.services.items[i]);} }
     function handleServiceImageUpload(e, i) { const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=function(ev){config.services.items[i].iconData=ev.target.result; renderServicesList();}; r.readAsDataURL(f); }
-    function handleServiceBgUpload(e, i) { const f=e.target.files[0]; if(!f)return; config.services.items=collectServicesFromDOM(); compressImage(f, 1200, 800, 0.7, function(dataUrl){config.services.items[i].bgImage=dataUrl; renderServicesList();}); }
+    function handleServiceBgUpload(e, i) { const f=e.target.files[0]; if(!f)return; config.services.items=collectServicesFromDOM(); compressImage(f, 800, 500, 0.5, function(dataUrl){config.services.items[i].bgImage=dataUrl; renderServicesList();}); }
     function clearServiceBg(i) { config.services.items=collectServicesFromDOM(); config.services.items[i].bgImage=''; renderServicesList(); }
     function updateBgPreview(i) { const item=document.querySelector(`[data-service-index="${i}"]`); if(!item)return; const url=item.querySelector('.svc-bg-image')?.value||''; const op=parseFloat(item.querySelector('.svc-bg-opacity')?.value||'15')/100; const bl=parseInt(item.querySelector('.svc-bg-blur')?.value||'0',10); const p=item.querySelector('.svc-bg-preview'); if(!p)return; if(url){p.innerHTML=`<div class="absolute inset-0" style="background-image:url('${url}');background-size:cover;background-position:center;opacity:${op};filter:blur(${bl}px);"></div><div class="absolute inset-0 flex items-center justify-center text-xs text-white font-semibold z-10">Apercu</div>`;} else {p.innerHTML='<div class="flex items-center justify-center h-full text-xs text-gray-600">Aucune image</div>';} }
     function collectServicesFromDOM() { const items=[]; document.querySelectorAll('[data-service-index]').forEach(div=>{items.push({title:div.querySelector('.svc-title')?.value||'',description:div.querySelector('.svc-desc')?.value||'',iconType:div.querySelector('.svc-icon-type')?.value||'svg',iconData:div.querySelector('.svc-icon-data')?.value||'',bgImage:div.querySelector('.svc-bg-image')?.value||'',bgOpacity:parseFloat(div.querySelector('.svc-bg-opacity')?.value||'15')/100,bgBlur:parseInt(div.querySelector('.svc-bg-blur')?.value||'0',10)});}); return items.length?items:config.services.items; }
@@ -783,7 +783,7 @@
     }
 
     // ======================== HERO IMAGE ========================
-    function handleHeroImageUpload(e) { var f=e.target.files[0]; if(!f)return; compressImage(f, 1200, 800, 0.7, function(dataUrl){document.getElementById('hero_image').value=dataUrl; updateHeroImagePreview();}); }
+    function handleHeroImageUpload(e) { var f=e.target.files[0]; if(!f)return; compressImage(f, 800, 500, 0.5, function(dataUrl){document.getElementById('hero_image').value=dataUrl; updateHeroImagePreview();}); }
     function clearHeroImage() { document.getElementById('hero_image').value=''; updateHeroImagePreview(); }
     function updateHeroImagePreview() { var url=document.getElementById('hero_image').value; var op=parseInt(document.getElementById('hero_imageOpacity').value)/100; var p=document.getElementById('hero_imagePreview'); if(url){p.innerHTML='<div class="absolute inset-0" style="background-image:url(\''+url.replace(/'/g,"\\'")+'\');background-size:cover;background-position:center;opacity:'+op+';"></div><div class="absolute inset-0 flex items-center justify-center text-xs text-white font-semibold z-10">Apercu</div>';} else {p.innerHTML='<div class="flex items-center justify-center h-full text-xs text-gray-600">Aucune image</div>';} }
 
@@ -825,8 +825,8 @@
 
     // ======================== IMPORT / EXPORT ========================
     function exportConfig() { saveAll(); const b=new Blob([JSON.stringify(config,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='pink-agency-config.json'; a.click(); showToast('Configuration exportee','success'); }
-    function importConfig(e) { const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=function(ev){try{config=JSON.parse(ev.target.result); localStorage.setItem('pinkAgencyConfig',JSON.stringify(config)); populateFields(); showToast('Configuration importee !','success');}catch(err){showToast('Fichier JSON invalide','error');}}; r.readAsText(f); e.target.value=''; }
-    function resetAll() { if(!confirm('Remettre toute la configuration par defaut ?'))return; config=JSON.parse(JSON.stringify(DEFAULT_CONFIG)); localStorage.setItem('pinkAgencyConfig',JSON.stringify(config)); if(sb){sb.from('site_config').upsert({id:1,config:config,updated_at:new Date().toISOString()});} populateFields(); showToast('Configuration remise par defaut','info'); }
+    function importConfig(e) { const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=function(ev){try{config=JSON.parse(ev.target.result); try{localStorage.setItem('pinkAgencyConfig',JSON.stringify(config));}catch(q){} populateFields(); showToast('Configuration importee !','success');}catch(err){showToast('Fichier JSON invalide','error');}}; r.readAsText(f); e.target.value=''; }
+    function resetAll() { if(!confirm('Remettre toute la configuration par defaut ?'))return; config=JSON.parse(JSON.stringify(DEFAULT_CONFIG)); try{localStorage.setItem('pinkAgencyConfig',JSON.stringify(config));}catch(q){} if(sb){sb.from('site_config').upsert({id:1,config:config,updated_at:new Date().toISOString()});} populateFields(); showToast('Configuration remise par defaut','info'); }
 
     // ======================== TOAST ========================
     function showToast(msg, type='info') { const c=document.getElementById('toastContainer'); const t=document.createElement('div'); const colors={success:'border-green-500 bg-green-500/10 text-green-400',error:'border-red-500 bg-red-500/10 text-red-400',info:'border-pink-500 bg-pink-500/10 text-pink-400'}; t.className=`toast px-6 py-3 rounded-lg border ${colors[type]||colors.info} backdrop-blur-xl text-sm font-semibold`; t.textContent=msg; c.appendChild(t); setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity 0.3s';setTimeout(()=>t.remove(),300);},3000); }
