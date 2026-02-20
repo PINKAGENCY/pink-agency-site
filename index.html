@@ -603,9 +603,22 @@
                 hlWrap.style.width = sz + 'px'; hlWrap.style.height = sz + 'px';
                 hl.style.opacity = g.logoOpacity !== undefined ? g.logoOpacity : 1;
                 hl.style.filter = 'drop-shadow(0 0 30px rgba(236,72,153,0.5))' + (g.logoBlur ? ' blur('+g.logoBlur+'px)' : '');
+                var hdl = document.getElementById('headerLogo');
+                var hds = g.hdrLogoSize || 48;
+                hdl.style.height = hds + 'px'; hdl.style.width = 'auto';
+                hdl.style.opacity = g.hdrLogoOpacity !== undefined ? g.hdrLogoOpacity : 1;
+                hdl.style.filter = g.hdrLogoBlur ? 'blur('+g.hdrLogoBlur+'px)' : '';
                 if (g.brandName) {
                     document.getElementById('headerBrand').textContent = g.brandName;
                     document.getElementById('footerBrand').textContent = g.brandName;
+                }
+                var hb = document.getElementById('headerBrand');
+                hb.style.fontSize = (g.brandSize || 24) + 'px';
+                if (g.brandColorType === 'solid') {
+                    hb.style.background = 'none'; hb.style.webkitBackgroundClip = ''; hb.style.backgroundClip = ''; hb.style.webkitTextFillColor = ''; hb.style.color = g.brandColor || '#ec4899'; hb.className = hb.className.replace(/bg-gradient-to-r[^\s]*/g,'').replace(/from-[^\s]*/g,'').replace(/via-[^\s]*/g,'').replace(/to-[^\s]*/g,'').replace(/bg-clip-text/g,'').replace(/text-transparent/g,'');
+                } else {
+                    var g1=g.brandGrad1||'#ec4899',g2=g.brandGrad2||'#f9a8d4',g3=g.brandGrad3||'#ffffff';
+                    hb.style.background = 'linear-gradient(to right,'+g1+','+g2+','+g3+')'; hb.style.webkitBackgroundClip = 'text'; hb.style.backgroundClip = 'text'; hb.style.webkitTextFillColor = 'transparent'; hb.style.color = 'transparent';
                 }
                 const n1i = g.nav1Icon || '🏠', n2i = g.nav2Icon || '💼', n3i = g.nav3Icon || '👥', nci = g.navCtaIcon || '💬';
                 setNavLink('navLink1', n1i, g.nav1 || 'Accueil');

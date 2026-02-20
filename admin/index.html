@@ -149,9 +149,28 @@
                                         <div><label class="block text-xs text-gray-500 mb-1">Flou : <span id="gen_logoBlurVal" class="text-pink-400">0px</span></label><input type="range" id="gen_logoBlur" class="w-full accent-pink-500" min="0" max="20" value="0" oninput="document.getElementById('gen_logoBlurVal').textContent=this.value+'px'"></div>
                                     </div>
                                 </div>
-                                <div>
-                                    <label class="block text-sm text-gray-400 mb-1">Nom de l'agence</label>
-                                    <input type="text" id="gen_brandName" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none transition-colors" placeholder="PINK AGENCY">
+                                <div class="border-t border-gray-700 pt-4 mt-2">
+                                    <label class="block text-sm text-pink-400 font-semibold mb-2">Logo Header (barre de navigation)</label>
+                                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                        <div><label class="block text-xs text-gray-500 mb-1">Taille : <span id="gen_hdrLogoSizeVal" class="text-pink-400">48px</span></label><input type="range" id="gen_hdrLogoSize" class="w-full accent-pink-500" min="20" max="120" value="48" oninput="document.getElementById('gen_hdrLogoSizeVal').textContent=this.value+'px'"></div>
+                                        <div><label class="block text-xs text-gray-500 mb-1">Transparence : <span id="gen_hdrLogoOpacityVal" class="text-pink-400">100%</span></label><input type="range" id="gen_hdrLogoOpacity" class="w-full accent-pink-500" min="0" max="100" value="100" oninput="document.getElementById('gen_hdrLogoOpacityVal').textContent=this.value+'%'"></div>
+                                        <div><label class="block text-xs text-gray-500 mb-1">Flou : <span id="gen_hdrLogoBlurVal" class="text-pink-400">0px</span></label><input type="range" id="gen_hdrLogoBlur" class="w-full accent-pink-500" min="0" max="20" value="0" oninput="document.getElementById('gen_hdrLogoBlurVal').textContent=this.value+'px'"></div>
+                                    </div>
+                                </div>
+                                <div class="border-t border-gray-700 pt-4 mt-2">
+                                    <label class="block text-sm text-pink-400 font-semibold mb-2">Texte de l'agence</label>
+                                    <div class="flex gap-3 mb-3">
+                                        <input type="text" id="gen_brandName" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none" placeholder="PINK AGENCY">
+                                        <div><label class="block text-xs text-gray-500 mb-1">Taille</label><input type="number" id="gen_brandSize" class="w-20 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-pink-500 focus:outline-none" value="24" min="12" max="60"></div>
+                                    </div>
+                                    <div class="flex gap-3 items-center mb-3">
+                                        <select id="gen_brandColorType" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-pink-500 focus:outline-none" onchange="document.getElementById('brandColorSimple').classList.toggle('hidden',this.value!=='solid');document.getElementById('brandColorGrad').classList.toggle('hidden',this.value!=='gradient');">
+                                            <option value="gradient">Degrade</option>
+                                            <option value="solid">Couleur simple</option>
+                                        </select>
+                                        <div id="brandColorSimple" class="hidden"><input type="color" id="gen_brandColor" value="#ec4899" class="w-10 h-10 rounded cursor-pointer bg-transparent border-0"></div>
+                                        <div id="brandColorGrad" class="flex gap-2 items-center"><input type="color" id="gen_brandGrad1" value="#ec4899" class="w-8 h-8 rounded cursor-pointer bg-transparent border-0"><input type="color" id="gen_brandGrad2" value="#f9a8d4" class="w-8 h-8 rounded cursor-pointer bg-transparent border-0"><input type="color" id="gen_brandGrad3" value="#ffffff" class="w-8 h-8 rounded cursor-pointer bg-transparent border-0"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -636,7 +655,9 @@
 
     function saveAll() {
         config.general = {
-            logoUrl: v('gen_logoUrl'), logoSize: parseInt(document.getElementById('gen_logoSize').value), logoOpacity: parseInt(document.getElementById('gen_logoOpacity').value)/100, logoBlur: parseInt(document.getElementById('gen_logoBlur').value), brandName: v('gen_brandName'),
+            logoUrl: v('gen_logoUrl'), logoSize: parseInt(document.getElementById('gen_logoSize').value), logoOpacity: parseInt(document.getElementById('gen_logoOpacity').value)/100, logoBlur: parseInt(document.getElementById('gen_logoBlur').value),
+            hdrLogoSize: parseInt(document.getElementById('gen_hdrLogoSize').value), hdrLogoOpacity: parseInt(document.getElementById('gen_hdrLogoOpacity').value)/100, hdrLogoBlur: parseInt(document.getElementById('gen_hdrLogoBlur').value),
+            brandName: v('gen_brandName'), brandSize: parseInt(v('gen_brandSize'))||24, brandColorType: v('gen_brandColorType'), brandColor: v('gen_brandColor'), brandGrad1: v('gen_brandGrad1'), brandGrad2: v('gen_brandGrad2'), brandGrad3: v('gen_brandGrad3'),
             nav1: v('gen_nav1'), nav1Icon: v('gen_nav1Icon'),
             nav2: v('gen_nav2'), nav2Icon: v('gen_nav2Icon'),
             nav3: v('gen_nav3'), nav3Icon: v('gen_nav3Icon'),
@@ -682,6 +703,15 @@
         var ls=config.general.logoSize||160; document.getElementById('gen_logoSize').value=ls; document.getElementById('gen_logoSizeVal').textContent=ls+'px';
         var lo=config.general.logoOpacity!==undefined?Math.round(config.general.logoOpacity*100):100; document.getElementById('gen_logoOpacity').value=lo; document.getElementById('gen_logoOpacityVal').textContent=lo+'%';
         var lb=config.general.logoBlur||0; document.getElementById('gen_logoBlur').value=lb; document.getElementById('gen_logoBlurVal').textContent=lb+'px';
+        var hs=config.general.hdrLogoSize||48; document.getElementById('gen_hdrLogoSize').value=hs; document.getElementById('gen_hdrLogoSizeVal').textContent=hs+'px';
+        var ho=config.general.hdrLogoOpacity!==undefined?Math.round(config.general.hdrLogoOpacity*100):100; document.getElementById('gen_hdrLogoOpacity').value=ho; document.getElementById('gen_hdrLogoOpacityVal').textContent=ho+'%';
+        var hb=config.general.hdrLogoBlur||0; document.getElementById('gen_hdrLogoBlur').value=hb; document.getElementById('gen_hdrLogoBlurVal').textContent=hb+'px';
+        sv('gen_brandSize', config.general.brandSize||24);
+        var bct=config.general.brandColorType||'gradient'; document.getElementById('gen_brandColorType').value=bct; document.getElementById('brandColorSimple').classList.toggle('hidden',bct!=='solid'); document.getElementById('brandColorGrad').classList.toggle('hidden',bct!=='gradient');
+        if(config.general.brandColor) document.getElementById('gen_brandColor').value=config.general.brandColor;
+        if(config.general.brandGrad1) document.getElementById('gen_brandGrad1').value=config.general.brandGrad1;
+        if(config.general.brandGrad2) document.getElementById('gen_brandGrad2').value=config.general.brandGrad2;
+        if(config.general.brandGrad3) document.getElementById('gen_brandGrad3').value=config.general.brandGrad3;
         sv('gen_nav1', config.general.nav1); sv('gen_nav1Icon', config.general.nav1Icon);
         sv('gen_nav2', config.general.nav2); sv('gen_nav2Icon', config.general.nav2Icon);
         sv('gen_nav3', config.general.nav3); sv('gen_nav3Icon', config.general.nav3Icon);
