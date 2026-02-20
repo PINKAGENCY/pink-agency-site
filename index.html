@@ -396,7 +396,7 @@
     <!-- Footer -->
     <footer class="relative z-10 bg-black/80 border-t border-pink-500/20 pt-12 sm:pt-16 pb-6 px-4 sm:px-6">
         <div class="max-w-7xl mx-auto">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 sm:gap-12 mb-10 text-center md:text-left">
+            <div class="grid grid-cols-2 gap-4 sm:gap-12 mb-10 text-center md:text-left">
                 <!-- Gauche -->
                 <div class="slide-in-left space-y-8">
                     <div>
@@ -946,19 +946,21 @@
 
         // Counter animation
         function animateCounter(el) {
-            var text = el.textContent.trim();
-            var match = text.match(/^(\d+)/);
+            var text = el.getAttribute('data-final');
+            if (!text) { text = el.textContent.trim(); el.setAttribute('data-final', text); }
+            var match = text.match(/(\d+)/);
             if (!match) return;
             var target = parseInt(match[1]);
-            var suffix = text.replace(/^\d+/, '');
+            var before = text.substring(0, text.indexOf(match[1]));
+            var after = text.substring(text.indexOf(match[1]) + match[1].length);
             var duration = 1500;
             var start = null;
-            el.textContent = '0' + suffix;
+            el.textContent = before + '0' + after;
             function step(ts) {
                 if (!start) start = ts;
                 var p = Math.min((ts - start) / duration, 1);
                 var ease = 1 - Math.pow(1 - p, 3);
-                el.textContent = Math.floor(target * ease) + suffix;
+                el.textContent = before + Math.floor(target * ease) + after;
                 if (p < 1) requestAnimationFrame(step);
             }
             requestAnimationFrame(step);
@@ -971,7 +973,7 @@
                     counterObserver.unobserve(entry.target);
                 }
             });
-        }, {threshold: 0.5});
+        }, {threshold: 0.1});
         var statWrap = document.querySelector('#aboutStat1Num');
         if (statWrap && statWrap.parentElement.parentElement) counterObserver.observe(statWrap.parentElement.parentElement);
     </script>
