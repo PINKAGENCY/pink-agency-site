@@ -30,7 +30,7 @@
     <main class="max-w-4xl mx-auto px-4 sm:px-6 pt-28 pb-16">
         <h1 class="text-4xl sm:text-5xl font-black mb-10 bg-gradient-to-r from-pink-400 to-white bg-clip-text text-transparent">Politique de Confidentialité</h1>
 
-        <div class="space-y-8 text-gray-300 leading-relaxed">
+        <div id="pageContent" class="space-y-8 text-gray-300 leading-relaxed">
 
             <section>
                 <h2 class="text-2xl font-bold text-pink-400 mb-4">1. Introduction</h2>
@@ -137,5 +137,17 @@
             <span class="text-pink-400">Confidentialité</span>
         </div>
     </footer>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script>
+    (async function(){
+        try {
+            var sb = window.supabase.createClient('https://cqurzyjceftqkzbikrmt.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxdXJ6eWpjZWZ0cWt6Ymlrcm10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTc3ODksImV4cCI6MjA4NjczMzc4OX0.k8DFzLeQgDJnPDq_V78RqirQpFyAScilFMingQVX3r4');
+            var {data}=await sb.from('site_config').select('config').eq('id',1).single();
+            if(data&&data.config&&data.config.pages&&data.config.pages.confidentialite){
+                document.getElementById('pageContent').innerHTML=data.config.pages.confidentialite;
+            }
+        }catch(e){console.warn('Fallback to static content');}
+    })();
+    </script>
 </body>
 </html>

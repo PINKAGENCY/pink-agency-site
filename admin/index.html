@@ -7,6 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
     <style>
         * { font-family: 'Exo 2', sans-serif; }
         ::-webkit-scrollbar { width: 8px; }
@@ -21,6 +23,17 @@
         .toast { animation: slideToast 0.4s ease-out; }
         @keyframes slideToast { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         textarea { resize: vertical; }
+        .ql-toolbar.ql-snow { background: #1f2937; border-color: #374151; border-radius: 8px 8px 0 0; }
+        .ql-container.ql-snow { background: #111827; border-color: #374151; border-radius: 0 0 8px 8px; color: #e5e7eb; min-height: 200px; }
+        .ql-editor { min-height: 200px; }
+        .ql-snow .ql-stroke { stroke: #9ca3af; }
+        .ql-snow .ql-fill { fill: #9ca3af; }
+        .ql-snow .ql-picker-label { color: #9ca3af; }
+        .ql-snow .ql-picker-options { background: #1f2937; border-color: #374151; }
+        .ql-snow .ql-picker-item { color: #e5e7eb; }
+        .ql-snow .ql-active .ql-stroke { stroke: #ec4899; }
+        .ql-snow .ql-active .ql-fill { fill: #ec4899; }
+        .ql-snow .ql-active { color: #ec4899; }
         .login-bg { background: radial-gradient(ellipse at center, rgba(236,72,153,0.15) 0%, transparent 70%); }
         /* Mobile menu */
         .mobile-tabs { display: none; }
@@ -104,6 +117,7 @@
             <button onclick="switchTab('contact')" class="tab-btn px-4 py-2 rounded-lg font-semibold transition-all text-gray-400" data-tab="contact">Contact</button>
             <button onclick="switchTab('footer')" class="tab-btn px-4 py-2 rounded-lg font-semibold transition-all text-gray-400" data-tab="footer">Footer</button>
             <button onclick="switchTab('seo')" class="tab-btn px-4 py-2 rounded-lg font-semibold transition-all text-gray-400" data-tab="seo">SEO</button>
+            <button onclick="switchTab('pages')" class="tab-btn px-4 py-2 rounded-lg font-semibold transition-all text-gray-400" data-tab="pages">Pages</button>
             <button onclick="switchTab('account')" class="tab-btn px-4 py-2 rounded-lg font-semibold transition-all text-gray-400" data-tab="account">Compte</button>
         </div>
 
@@ -118,6 +132,7 @@
                     <button onclick="switchTab('contact')" class="tab-btn w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-pink-500/10 text-gray-400" data-tab="contact">Contact</button>
                     <button onclick="switchTab('footer')" class="tab-btn w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-pink-500/10 text-gray-400" data-tab="footer">Footer</button>
                     <button onclick="switchTab('seo')" class="tab-btn w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-pink-500/10 text-gray-400" data-tab="seo">SEO / Meta</button>
+                    <button onclick="switchTab('pages')" class="tab-btn w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-pink-500/10 text-gray-400" data-tab="pages">Pages Legales</button>
                     <div class="border-t border-gray-800 my-3"></div>
                     <button onclick="switchTab('account')" class="tab-btn w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-pink-500/10 text-gray-400" data-tab="account">Compte Admin</button>
                 </div>
@@ -281,7 +296,7 @@
                     <div class="space-y-6">
                         <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
                             <h3 class="text-lg font-semibold text-pink-400 mb-4">Texte de presentation</h3>
-                            <textarea id="svc_introText" rows="4" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none transition-colors"></textarea>
+                            <div id="editor_introText"></div>
                         </div>
                         <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
                             <h3 class="text-lg font-semibold text-pink-400 mb-2">Titre de la section</h3>
@@ -422,6 +437,21 @@
                     <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
                         <h3 class="text-lg font-semibold text-pink-400 mb-4">Metadonnees</h3>
                         <div><label class="block text-sm text-gray-400 mb-1">Titre de la page (onglet navigateur)</label><input type="text" id="seo_title" class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-sm focus:border-pink-500 focus:outline-none"></div>
+                    </div>
+                </div>
+
+                <!-- PAGES TAB -->
+                <div id="tab-pages" class="tab-content hidden fade-in">
+                    <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-pink-400 to-white bg-clip-text text-transparent">Pages Legales</h2>
+                    <div class="space-y-6">
+                        <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-pink-400 mb-4">Mentions Legales</h3>
+                            <div id="editor_mentions"></div>
+                        </div>
+                        <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-pink-400 mb-4">Politique de Confidentialite</h3>
+                            <div id="editor_confidentialite"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -593,7 +623,8 @@
             tiktok: "", tiktokIcon: "\u{1F3B5}",
             emailIcon: "\u2709\uFE0F"
         },
-        seo: { title: "Pink Agency - Agence Digitale" }
+        seo: { title: "Pink Agency - Agence Digitale" },
+        pages: { mentionsLegales: '', confidentialite: '' }
     };
 
     // ======================== SVG ICON LIBRARY ========================
@@ -664,7 +695,7 @@
             navCta: v('gen_navCta'), navCtaIcon: v('gen_navCtaIcon')
         };
         config.hero = { description: v('hero_description'), btn1Text: v('hero_btn1Text'), btn1Link: v('hero_btn1Link'), btn2Text: v('hero_btn2Text'), btn2Link: v('hero_btn2Link'), image: v('hero_image'), imageOpacity: parseInt(document.getElementById('hero_imageOpacity').value) / 100 };
-        config.services.introText = v('svc_introText');
+        config.services.introText = quillIntro ? quillIntro.root.innerHTML : (config.services.introText || '');
         config.services.sectionTitle = v('svc_sectionTitle');
         config.services.sectionSubtitle = v('svc_sectionSubtitle');
         config.services.items = collectServicesFromDOM();
@@ -678,6 +709,7 @@
             emailIcon: v('footer_emailIcon')
         };
         config.seo = { title: v('seo_title') };
+        config.pages = { mentionsLegales: quillMentions ? quillMentions.root.innerHTML : (config.pages?.mentionsLegales || ''), confidentialite: quillConfidentialite ? quillConfidentialite.root.innerHTML : (config.pages?.confidentialite || '') };
         try { localStorage.setItem('pinkAgencyConfig', JSON.stringify(config)); } catch(e) { console.warn('localStorage quota exceeded, using Supabase only'); }
         // Save to Supabase
         try {
@@ -718,7 +750,9 @@
         sv('gen_navCta', config.general.navCta); sv('gen_navCtaIcon', config.general.navCtaIcon);
         updatePreview('gen_logoUrl', 'gen_logoPreview');
         sv('hero_description', config.hero.description); sv('hero_btn1Text', config.hero.btn1Text); sv('hero_btn1Link', config.hero.btn1Link); sv('hero_btn2Text', config.hero.btn2Text); sv('hero_btn2Link', config.hero.btn2Link); sv('hero_image', config.hero.image || ''); var hOpVal = config.hero.imageOpacity !== undefined ? Math.round(config.hero.imageOpacity * 100) : 100; document.getElementById('hero_imageOpacity').value = hOpVal; document.getElementById('hero_opacityVal').textContent = hOpVal + '%'; updateHeroImagePreview();
-        sv('svc_introText', config.services.introText); sv('svc_sectionTitle', config.services.sectionTitle); sv('svc_sectionSubtitle', config.services.sectionSubtitle);
+        initQuillEditors();
+        if (quillIntro && config.services.introText) quillIntro.root.innerHTML = config.services.introText;
+        sv('svc_sectionTitle', config.services.sectionTitle); sv('svc_sectionSubtitle', config.services.sectionSubtitle);
         renderServicesList();
         sv('about_title1', config.about.title1); sv('about_title2', config.about.title2); sv('about_para1', config.about.para1); sv('about_para2', config.about.para2);
         sv('about_stat1Num', config.about.stat1Num); sv('about_stat1Label', config.about.stat1Label); sv('about_stat2Num', config.about.stat2Num); sv('about_stat2Label', config.about.stat2Label);
@@ -730,6 +764,9 @@
         sv('footer_tiktok', config.footer.tiktok); sv('footer_tiktokIcon', config.footer.tiktokIcon);
         sv('footer_emailIcon', config.footer.emailIcon);
         sv('seo_title', config.seo.title);
+        if (!config.pages) config.pages = {};
+        if (quillMentions && config.pages.mentionsLegales) quillMentions.root.innerHTML = config.pages.mentionsLegales;
+        if (quillConfidentialite && config.pages.confidentialite) quillConfidentialite.root.innerHTML = config.pages.confidentialite;
         // Account
         try {
             const creds = await getCredentials();
@@ -901,6 +938,21 @@
     window.handleHeroImageUpload = handleHeroImageUpload;
     window.clearHeroImage = clearHeroImage;
     window.updateHeroImagePreview = updateHeroImagePreview;
+
+    // ======================== QUILL EDITORS ========================
+    var quillToolbar = [['bold','italic','underline','strike'],['blockquote'],['link'],[{'header':[1,2,3,false]}],[{'color':[]},{'background':[]}],[{'list':'ordered'},{'list':'bullet'}],['clean']];
+    var quillIntro, quillMentions, quillConfidentialite;
+    function initQuillEditors() {
+        if (!quillIntro && document.getElementById('editor_introText')) {
+            quillIntro = new Quill('#editor_introText', {theme:'snow', modules:{toolbar:quillToolbar}});
+        }
+        if (!quillMentions && document.getElementById('editor_mentions')) {
+            quillMentions = new Quill('#editor_mentions', {theme:'snow', modules:{toolbar:quillToolbar}});
+        }
+        if (!quillConfidentialite && document.getElementById('editor_confidentialite')) {
+            quillConfidentialite = new Quill('#editor_confidentialite', {theme:'snow', modules:{toolbar:quillToolbar}});
+        }
+    }
 
     // ======================== INIT ========================
     // Attach login form event listener directly (not via inline onsubmit)
