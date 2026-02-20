@@ -751,7 +751,7 @@
     function toggleIconInput(i, type) { config.services.items[i].iconType = type; config.services.items[i].iconData = type==='svg'?ICON_NAMES[0]:''; renderServicesList(); }
     function updateServiceIconPreview(i) { const item = document.querySelector(`[data-service-index="${i}"]`); if(!item)return; const d=item.querySelector('.svc-icon-data'); if(d){config.services.items[i].iconData=d.value; const p=item.querySelector('.svc-icon-preview'); if(p)p.innerHTML=getIconPreview(config.services.items[i]);} }
     function handleServiceImageUpload(e, i) { const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=function(ev){config.services.items[i].iconData=ev.target.result; renderServicesList();}; r.readAsDataURL(f); }
-    function handleServiceBgUpload(e, i) { const f=e.target.files[0]; if(!f)return; config.services.items=collectServicesFromDOM(); const r=new FileReader(); r.onload=function(ev){config.services.items[i].bgImage=ev.target.result; renderServicesList();}; r.readAsDataURL(f); }
+    function handleServiceBgUpload(e, i) { const f=e.target.files[0]; if(!f)return; config.services.items=collectServicesFromDOM(); compressImage(f, 1200, 800, 0.7, function(dataUrl){config.services.items[i].bgImage=dataUrl; renderServicesList();}); }
     function clearServiceBg(i) { config.services.items=collectServicesFromDOM(); config.services.items[i].bgImage=''; renderServicesList(); }
     function updateBgPreview(i) { const item=document.querySelector(`[data-service-index="${i}"]`); if(!item)return; const url=item.querySelector('.svc-bg-image')?.value||''; const op=parseFloat(item.querySelector('.svc-bg-opacity')?.value||'15')/100; const bl=parseInt(item.querySelector('.svc-bg-blur')?.value||'0',10); const p=item.querySelector('.svc-bg-preview'); if(!p)return; if(url){p.innerHTML=`<div class="absolute inset-0" style="background-image:url('${url}');background-size:cover;background-position:center;opacity:${op};filter:blur(${bl}px);"></div><div class="absolute inset-0 flex items-center justify-center text-xs text-white font-semibold z-10">Apercu</div>`;} else {p.innerHTML='<div class="flex items-center justify-center h-full text-xs text-gray-600">Aucune image</div>';} }
     function collectServicesFromDOM() { const items=[]; document.querySelectorAll('[data-service-index]').forEach(div=>{items.push({title:div.querySelector('.svc-title')?.value||'',description:div.querySelector('.svc-desc')?.value||'',iconType:div.querySelector('.svc-icon-type')?.value||'svg',iconData:div.querySelector('.svc-icon-data')?.value||'',bgImage:div.querySelector('.svc-bg-image')?.value||'',bgOpacity:parseFloat(div.querySelector('.svc-bg-opacity')?.value||'15')/100,bgBlur:parseInt(div.querySelector('.svc-bg-blur')?.value||'0',10)});}); return items.length?items:config.services.items; }
@@ -769,8 +769,21 @@
     function handleImageUpload(e, inputId, previewId) { const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=function(ev){document.getElementById(inputId).value=ev.target.result; updatePreview(inputId,previewId);}; r.readAsDataURL(f); }
     function updatePreview(inputId, previewId) { const url=document.getElementById(inputId)?.value; const p=document.getElementById(previewId); if(!p)return; p.innerHTML=url?`<img src="${url}" class="preview-img rounded-lg border border-gray-700 mt-2" onerror="this.parentElement.innerHTML='<span class=\\'text-red-400 text-sm\\'>Image introuvable</span>'">`:''; }
 
+    // ======================== IMAGE COMPRESS ========================
+    function compressImage(file, maxW, maxH, quality, cb) {
+        var r=new FileReader(); r.onload=function(ev){
+            var img=new Image(); img.onload=function(){
+                var w=img.width, h=img.height;
+                if(w>maxW){h=h*(maxW/w);w=maxW;} if(h>maxH){w=w*(maxH/h);h=maxH;}
+                var c=document.createElement('canvas'); c.width=w; c.height=h;
+                c.getContext('2d').drawImage(img,0,0,w,h);
+                cb(c.toDataURL('image/jpeg',quality));
+            }; img.src=ev.target.result;
+        }; r.readAsDataURL(file);
+    }
+
     // ======================== HERO IMAGE ========================
-    function handleHeroImageUpload(e) { var f=e.target.files[0]; if(!f)return; var r=new FileReader(); r.onload=function(ev){document.getElementById('hero_image').value=ev.target.result; updateHeroImagePreview();}; r.readAsDataURL(f); }
+    function handleHeroImageUpload(e) { var f=e.target.files[0]; if(!f)return; compressImage(f, 1200, 800, 0.7, function(dataUrl){document.getElementById('hero_image').value=dataUrl; updateHeroImagePreview();}); }
     function clearHeroImage() { document.getElementById('hero_image').value=''; updateHeroImagePreview(); }
     function updateHeroImagePreview() { var url=document.getElementById('hero_image').value; var op=parseInt(document.getElementById('hero_imageOpacity').value)/100; var p=document.getElementById('hero_imagePreview'); if(url){p.innerHTML='<div class="absolute inset-0" style="background-image:url(\''+url.replace(/'/g,"\\'")+'\');background-size:cover;background-position:center;opacity:'+op+';"></div><div class="absolute inset-0 flex items-center justify-center text-xs text-white font-semibold z-10">Apercu</div>';} else {p.innerHTML='<div class="flex items-center justify-center h-full text-xs text-gray-600">Aucune image</div>';} }
 
