@@ -270,6 +270,7 @@
                                 <button onclick="clearHeroImage()" class="px-3 py-2 text-xs bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/30 whitespace-nowrap">Retirer</button>
                             </div>
                             <div class="mb-3"><label class="block text-xs text-gray-500 mb-1">Transparence : <span id="hero_opacityVal" class="text-pink-400">100%</span></label><input type="range" id="hero_imageOpacity" class="w-full accent-pink-500" min="0" max="100" value="100" oninput="document.getElementById('hero_opacityVal').textContent=this.value+'%'; updateHeroImagePreview()"></div>
+                            <div class="mb-3"><label class="block text-xs text-gray-500 mb-1">Taille de l'image : <span id="hero_sizeVal" class="text-pink-400">100%</span></label><input type="range" id="hero_imageSize" class="w-full accent-pink-500" min="30" max="100" value="100" oninput="document.getElementById('hero_sizeVal').textContent=this.value+'%'"></div>
                             <div id="hero_imagePreview" class="relative w-full h-32 rounded-lg border border-gray-700 overflow-hidden bg-gray-800"><div class="flex items-center justify-center h-full text-xs text-gray-600">Aucune image</div></div>
                         </div>
                         <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
@@ -879,7 +880,7 @@
             nav3: v('gen_nav3'), nav3Icon: v('gen_nav3Icon'),
             navCta: v('gen_navCta'), navCtaIcon: v('gen_navCtaIcon')
         };
-        config.hero = { description: v('hero_description'), btn1Text: v('hero_btn1Text'), btn1Link: v('hero_btn1Link'), btn2Text: v('hero_btn2Text'), btn2Link: v('hero_btn2Link'), image: v('hero_image'), imageOpacity: parseInt(document.getElementById('hero_imageOpacity').value) / 100 };
+        config.hero = { description: v('hero_description'), btn1Text: v('hero_btn1Text'), btn1Link: v('hero_btn1Link'), btn2Text: v('hero_btn2Text'), btn2Link: v('hero_btn2Link'), image: v('hero_image'), imageOpacity: parseInt(document.getElementById('hero_imageOpacity').value) / 100, imageSize: parseInt(document.getElementById('hero_imageSize').value) };
         config.services.introText = quillIntro ? quillIntro.root.innerHTML : (config.services.introText || '');
         config.services.sectionTitle = v('svc_sectionTitle');
         config.services.sectionSubtitle = v('svc_sectionSubtitle');
@@ -935,7 +936,7 @@
         sv('gen_nav3', config.general.nav3); sv('gen_nav3Icon', config.general.nav3Icon);
         sv('gen_navCta', config.general.navCta); sv('gen_navCtaIcon', config.general.navCtaIcon);
         updatePreview('gen_logoUrl', 'gen_logoPreview');
-        sv('hero_description', config.hero.description); sv('hero_btn1Text', config.hero.btn1Text); sv('hero_btn1Link', config.hero.btn1Link); sv('hero_btn2Text', config.hero.btn2Text); sv('hero_btn2Link', config.hero.btn2Link); sv('hero_image', config.hero.image || ''); var hOpVal = config.hero.imageOpacity !== undefined ? Math.round(config.hero.imageOpacity * 100) : 100; document.getElementById('hero_imageOpacity').value = hOpVal; document.getElementById('hero_opacityVal').textContent = hOpVal + '%'; updateHeroImagePreview();
+        sv('hero_description', config.hero.description); sv('hero_btn1Text', config.hero.btn1Text); sv('hero_btn1Link', config.hero.btn1Link); sv('hero_btn2Text', config.hero.btn2Text); sv('hero_btn2Link', config.hero.btn2Link); sv('hero_image', config.hero.image || ''); var hOpVal = config.hero.imageOpacity !== undefined ? Math.round(config.hero.imageOpacity * 100) : 100; document.getElementById('hero_imageOpacity').value = hOpVal; document.getElementById('hero_opacityVal').textContent = hOpVal + '%'; var hSzVal = config.hero.imageSize || 100; document.getElementById('hero_imageSize').value = hSzVal; document.getElementById('hero_sizeVal').textContent = hSzVal + '%'; updateHeroImagePreview();
         initQuillEditors();
         if (quillIntro && config.services.introText) quillIntro.root.innerHTML = config.services.introText;
         sv('svc_sectionTitle', config.services.sectionTitle); sv('svc_sectionSubtitle', config.services.sectionSubtitle);

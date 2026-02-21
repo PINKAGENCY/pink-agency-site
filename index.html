@@ -640,7 +640,7 @@
                 document.getElementById('heroDescription').textContent = h.description || '';
                 var hiWrap = document.getElementById('heroImageWrap');
                 var hiImg = document.getElementById('heroImage');
-                if (h.image) { hiImg.src = h.image; hiImg.style.opacity = h.imageOpacity !== undefined ? h.imageOpacity : 1; hiWrap.classList.remove('hidden'); } else { hiWrap.classList.add('hidden'); }
+                if (h.image) { hiImg.src = h.image; hiImg.style.opacity = h.imageOpacity !== undefined ? h.imageOpacity : 1; var imgSize = h.imageSize || 100; hiWrap.style.maxWidth = (1400 * imgSize / 100) + 'px'; hiWrap.classList.remove('hidden'); } else { hiWrap.classList.add('hidden'); }
                 const btn1 = document.getElementById('heroBtn1');
                 const btn2 = document.getElementById('heroBtn2');
                 btn1.textContent = h.btn1Text || 'Découvrir nos services →';
