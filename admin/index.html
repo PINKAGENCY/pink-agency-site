@@ -116,6 +116,7 @@
             <button onclick="switchTab('about')" class="tab-btn px-4 py-2 rounded-lg font-semibold transition-all text-gray-400" data-tab="about">A propos</button>
             <button onclick="switchTab('contact')" class="tab-btn px-4 py-2 rounded-lg font-semibold transition-all text-gray-400" data-tab="contact">Contact</button>
             <button onclick="switchTab('footer')" class="tab-btn px-4 py-2 rounded-lg font-semibold transition-all text-gray-400" data-tab="footer">Footer</button>
+            <button onclick="switchTab('colors')" class="tab-btn px-4 py-2 rounded-lg font-semibold transition-all text-gray-400" data-tab="colors">Couleurs</button>
             <button onclick="switchTab('seo')" class="tab-btn px-4 py-2 rounded-lg font-semibold transition-all text-gray-400" data-tab="seo">SEO</button>
             <button onclick="switchTab('pages')" class="tab-btn px-4 py-2 rounded-lg font-semibold transition-all text-gray-400" data-tab="pages">Pages</button>
             <button onclick="switchTab('account')" class="tab-btn px-4 py-2 rounded-lg font-semibold transition-all text-gray-400" data-tab="account">Compte</button>
@@ -131,6 +132,7 @@
                     <button onclick="switchTab('about')" class="tab-btn w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-pink-500/10 text-gray-400" data-tab="about">Qui sommes-nous</button>
                     <button onclick="switchTab('contact')" class="tab-btn w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-pink-500/10 text-gray-400" data-tab="contact">Contact</button>
                     <button onclick="switchTab('footer')" class="tab-btn w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-pink-500/10 text-gray-400" data-tab="footer">Footer</button>
+                    <button onclick="switchTab('colors')" class="tab-btn w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-pink-500/10 text-gray-400" data-tab="colors">Couleurs / Theme</button>
                     <button onclick="switchTab('seo')" class="tab-btn w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-pink-500/10 text-gray-400" data-tab="seo">SEO / Meta</button>
                     <button onclick="switchTab('pages')" class="tab-btn w-full text-left px-4 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-pink-500/10 text-gray-400" data-tab="pages">Pages Legales</button>
                     <div class="border-t border-gray-800 my-3"></div>
@@ -431,6 +433,104 @@
                     </div>
                 </div>
 
+                <!-- COLORS TAB -->
+                <div id="tab-colors" class="tab-content hidden fade-in">
+                    <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-pink-400 to-white bg-clip-text text-transparent">Couleurs / Theme</h2>
+                    <div class="space-y-6">
+                        <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-pink-400 mb-4">Couleur d'accent</h3>
+                            <p class="text-xs text-gray-500 mb-4">La couleur principale du site (boutons, titres, liens, bordures...)</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm text-gray-400 mb-1">Principale</label>
+                                    <div class="flex items-center gap-3">
+                                        <input type="color" id="color_accent" value="#ec4899" class="w-12 h-10 rounded cursor-pointer border border-gray-700 bg-transparent">
+                                        <input type="text" id="color_accent_hex" value="#ec4899" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-pink-500 focus:outline-none uppercase" maxlength="7" oninput="syncColorFromHex('accent')">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-400 mb-1">Claire (texte, hover)</label>
+                                    <div class="flex items-center gap-3">
+                                        <input type="color" id="color_accentLight" value="#f472b6" class="w-12 h-10 rounded cursor-pointer border border-gray-700 bg-transparent">
+                                        <input type="text" id="color_accentLight_hex" value="#f472b6" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-pink-500 focus:outline-none uppercase" maxlength="7" oninput="syncColorFromHex('accentLight')">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-400 mb-1">Foncee (gradients)</label>
+                                    <div class="flex items-center gap-3">
+                                        <input type="color" id="color_accentDark" value="#db2777" class="w-12 h-10 rounded cursor-pointer border border-gray-700 bg-transparent">
+                                        <input type="text" id="color_accentDark_hex" value="#db2777" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-pink-500 focus:outline-none uppercase" maxlength="7" oninput="syncColorFromHex('accentDark')">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4 p-4 rounded-xl border border-gray-700" id="colorPreviewAccent" style="background: linear-gradient(135deg, #db2777 0%, #ec4899 50%, #f472b6 100%);">
+                                <p class="text-white text-sm font-bold text-center">Apercu du gradient d'accent</p>
+                            </div>
+                        </div>
+
+                        <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-pink-400 mb-4">Fond du site</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm text-gray-400 mb-1">Fond principal</label>
+                                    <div class="flex items-center gap-3">
+                                        <input type="color" id="color_bgPrimary" value="#000000" class="w-12 h-10 rounded cursor-pointer border border-gray-700 bg-transparent">
+                                        <input type="text" id="color_bgPrimary_hex" value="#000000" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-pink-500 focus:outline-none uppercase" maxlength="7" oninput="syncColorFromHex('bgPrimary')">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-400 mb-1">Fond secondaire (cartes, sections)</label>
+                                    <div class="flex items-center gap-3">
+                                        <input type="color" id="color_bgSecondary" value="#111827" class="w-12 h-10 rounded cursor-pointer border border-gray-700 bg-transparent">
+                                        <input type="text" id="color_bgSecondary_hex" value="#111827" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-pink-500 focus:outline-none uppercase" maxlength="7" oninput="syncColorFromHex('bgSecondary')">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4 flex gap-3">
+                                <div class="flex-1 p-4 rounded-xl border border-gray-700" id="colorPreviewBg1" style="background:#000;">
+                                    <p class="text-white text-xs text-center">Fond principal</p>
+                                </div>
+                                <div class="flex-1 p-4 rounded-xl border border-gray-700" id="colorPreviewBg2" style="background:#111827;">
+                                    <p class="text-white text-xs text-center">Fond secondaire</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-pink-400 mb-4">Texte</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm text-gray-400 mb-1">Texte principal</label>
+                                    <div class="flex items-center gap-3">
+                                        <input type="color" id="color_textPrimary" value="#ffffff" class="w-12 h-10 rounded cursor-pointer border border-gray-700 bg-transparent">
+                                        <input type="text" id="color_textPrimary_hex" value="#ffffff" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-pink-500 focus:outline-none uppercase" maxlength="7" oninput="syncColorFromHex('textPrimary')">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm text-gray-400 mb-1">Texte secondaire</label>
+                                    <div class="flex items-center gap-3">
+                                        <input type="color" id="color_textSecondary" value="#9ca3af" class="w-12 h-10 rounded cursor-pointer border border-gray-700 bg-transparent">
+                                        <input type="text" id="color_textSecondary_hex" value="#9ca3af" class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:border-pink-500 focus:outline-none uppercase" maxlength="7" oninput="syncColorFromHex('textSecondary')">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field-group bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-pink-400 mb-4">Presets rapides</h3>
+                            <div class="flex flex-wrap gap-3">
+                                <button onclick="applyPreset('pink')" class="px-4 py-2 rounded-lg text-sm font-semibold border border-pink-500/30 hover:bg-pink-500/10 transition-all flex items-center gap-2"><span class="w-4 h-4 rounded-full bg-pink-500 inline-block"></span> Rose (defaut)</button>
+                                <button onclick="applyPreset('blue')" class="px-4 py-2 rounded-lg text-sm font-semibold border border-blue-500/30 hover:bg-blue-500/10 transition-all flex items-center gap-2"><span class="w-4 h-4 rounded-full bg-blue-500 inline-block"></span> Bleu</button>
+                                <button onclick="applyPreset('purple')" class="px-4 py-2 rounded-lg text-sm font-semibold border border-purple-500/30 hover:bg-purple-500/10 transition-all flex items-center gap-2"><span class="w-4 h-4 rounded-full bg-purple-500 inline-block"></span> Violet</button>
+                                <button onclick="applyPreset('green')" class="px-4 py-2 rounded-lg text-sm font-semibold border border-green-500/30 hover:bg-green-500/10 transition-all flex items-center gap-2"><span class="w-4 h-4 rounded-full bg-green-500 inline-block"></span> Vert</button>
+                                <button onclick="applyPreset('orange')" class="px-4 py-2 rounded-lg text-sm font-semibold border border-orange-500/30 hover:bg-orange-500/10 transition-all flex items-center gap-2"><span class="w-4 h-4 rounded-full bg-orange-500 inline-block"></span> Orange</button>
+                                <button onclick="applyPreset('red')" class="px-4 py-2 rounded-lg text-sm font-semibold border border-red-500/30 hover:bg-red-500/10 transition-all flex items-center gap-2"><span class="w-4 h-4 rounded-full bg-red-500 inline-block"></span> Rouge</button>
+                                <button onclick="applyPreset('gold')" class="px-4 py-2 rounded-lg text-sm font-semibold border border-yellow-500/30 hover:bg-yellow-500/10 transition-all flex items-center gap-2"><span class="w-4 h-4 rounded-full bg-yellow-500 inline-block"></span> Or</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- SEO TAB -->
                 <div id="tab-seo" class="tab-content hidden fade-in">
                     <h2 class="text-2xl font-bold mb-6 bg-gradient-to-r from-pink-400 to-white bg-clip-text text-transparent">SEO / Meta</h2>
@@ -624,7 +724,8 @@
             emailIcon: "\u2709\uFE0F"
         },
         seo: { title: "Pink Agency - Agence Digitale" },
-        pages: { mentionsLegales: '', confidentialite: '' }
+        pages: { mentionsLegales: '', confidentialite: '' },
+        colors: { accent: '#ec4899', accentLight: '#f472b6', accentDark: '#db2777', bgPrimary: '#000000', bgSecondary: '#111827', textPrimary: '#ffffff', textSecondary: '#9ca3af' }
     };
 
     // ======================== SVG ICON LIBRARY ========================
@@ -684,6 +785,90 @@
         if (!config.footer.emailIcon && config.footer.emailIcon !== '') config.footer.emailIcon = DEFAULT_CONFIG.footer.emailIcon;
     }
 
+    // ======================== COLOR FUNCTIONS ========================
+    var colorFields = ['accent', 'accentLight', 'accentDark', 'bgPrimary', 'bgSecondary', 'textPrimary', 'textSecondary'];
+
+    function syncColorFromPicker(name) {
+        var picker = document.getElementById('color_' + name);
+        var hex = document.getElementById('color_' + name + '_hex');
+        if (picker && hex) { hex.value = picker.value.toUpperCase(); }
+        updateColorPreviews();
+    }
+    function syncColorFromHex(name) {
+        var hex = document.getElementById('color_' + name + '_hex');
+        var picker = document.getElementById('color_' + name);
+        if (hex && picker && /^#[0-9A-Fa-f]{6}$/.test(hex.value)) { picker.value = hex.value; }
+        updateColorPreviews();
+    }
+    function updateColorPreviews() {
+        var a = document.getElementById('color_accent').value;
+        var al = document.getElementById('color_accentLight').value;
+        var ad = document.getElementById('color_accentDark').value;
+        var bg1 = document.getElementById('color_bgPrimary').value;
+        var bg2 = document.getElementById('color_bgSecondary').value;
+        var prev = document.getElementById('colorPreviewAccent');
+        if (prev) prev.style.background = 'linear-gradient(135deg, ' + ad + ' 0%, ' + a + ' 50%, ' + al + ' 100%)';
+        var pbg1 = document.getElementById('colorPreviewBg1');
+        if (pbg1) pbg1.style.background = bg1;
+        var pbg2 = document.getElementById('colorPreviewBg2');
+        if (pbg2) pbg2.style.background = bg2;
+    }
+
+    // Add oninput listeners to color pickers
+    colorFields.forEach(function(name) {
+        setTimeout(function() {
+            var picker = document.getElementById('color_' + name);
+            if (picker) picker.addEventListener('input', function() { syncColorFromPicker(name); });
+        }, 100);
+    });
+
+    var COLOR_PRESETS = {
+        pink:   { accent: '#ec4899', accentLight: '#f472b6', accentDark: '#db2777' },
+        blue:   { accent: '#3b82f6', accentLight: '#60a5fa', accentDark: '#2563eb' },
+        purple: { accent: '#a855f7', accentLight: '#c084fc', accentDark: '#7c3aed' },
+        green:  { accent: '#22c55e', accentLight: '#4ade80', accentDark: '#16a34a' },
+        orange: { accent: '#f97316', accentLight: '#fb923c', accentDark: '#ea580c' },
+        red:    { accent: '#ef4444', accentLight: '#f87171', accentDark: '#dc2626' },
+        gold:   { accent: '#eab308', accentLight: '#facc15', accentDark: '#ca8a04' }
+    };
+
+    function applyPreset(name) {
+        var p = COLOR_PRESETS[name];
+        if (!p) return;
+        document.getElementById('color_accent').value = p.accent;
+        document.getElementById('color_accent_hex').value = p.accent.toUpperCase();
+        document.getElementById('color_accentLight').value = p.accentLight;
+        document.getElementById('color_accentLight_hex').value = p.accentLight.toUpperCase();
+        document.getElementById('color_accentDark').value = p.accentDark;
+        document.getElementById('color_accentDark_hex').value = p.accentDark.toUpperCase();
+        updateColorPreviews();
+        showToast('Preset ' + name + ' applique ! N\'oubliez pas de sauvegarder.', 'success');
+    }
+
+    function collectColors() {
+        return {
+            accent: document.getElementById('color_accent').value,
+            accentLight: document.getElementById('color_accentLight').value,
+            accentDark: document.getElementById('color_accentDark').value,
+            bgPrimary: document.getElementById('color_bgPrimary').value,
+            bgSecondary: document.getElementById('color_bgSecondary').value,
+            textPrimary: document.getElementById('color_textPrimary').value,
+            textSecondary: document.getElementById('color_textSecondary').value
+        };
+    }
+
+    function populateColors(c) {
+        if (!c) c = DEFAULT_CONFIG.colors;
+        colorFields.forEach(function(name) {
+            var val = c[name] || DEFAULT_CONFIG.colors[name];
+            var picker = document.getElementById('color_' + name);
+            var hex = document.getElementById('color_' + name + '_hex');
+            if (picker) picker.value = val;
+            if (hex) hex.value = val.toUpperCase();
+        });
+        updateColorPreviews();
+    }
+
     function saveAll() {
         config.general = {
             logoUrl: v('gen_logoUrl'), logoSize: parseInt(document.getElementById('gen_logoSize').value), logoOpacity: parseInt(document.getElementById('gen_logoOpacity').value)/100, logoBlur: parseInt(document.getElementById('gen_logoBlur').value),
@@ -709,6 +894,7 @@
             emailIcon: v('footer_emailIcon')
         };
         config.seo = { title: v('seo_title') };
+        config.colors = collectColors();
         config.pages = { mentionsLegales: quillMentions ? quillMentions.root.innerHTML : (config.pages?.mentionsLegales || ''), confidentialite: quillConfidentialite ? quillConfidentialite.root.innerHTML : (config.pages?.confidentialite || '') };
         try { localStorage.setItem('pinkAgencyConfig', JSON.stringify(config)); } catch(e) { console.warn('localStorage quota exceeded, using Supabase only'); }
         // Save to Supabase
@@ -764,6 +950,7 @@
         sv('footer_tiktok', config.footer.tiktok); sv('footer_tiktokIcon', config.footer.tiktokIcon);
         sv('footer_emailIcon', config.footer.emailIcon);
         sv('seo_title', config.seo.title);
+        populateColors(config.colors);
         if (!config.pages) config.pages = {};
         if (quillMentions && config.pages.mentionsLegales) quillMentions.root.innerHTML = config.pages.mentionsLegales;
         if (quillConfidentialite && config.pages.confidentialite) quillConfidentialite.root.innerHTML = config.pages.confidentialite;

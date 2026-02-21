@@ -570,9 +570,90 @@
             return icon || '';
         }
 
+        function hexToRgb(hex) {
+            var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+            return r+','+g+','+b;
+        }
+        function applyColors(c) {
+            if (!c) return;
+            var a = c.accent || '#ec4899';
+            var al = c.accentLight || '#f472b6';
+            var ad = c.accentDark || '#db2777';
+            var bg1 = c.bgPrimary || '#000000';
+            var bg2 = c.bgSecondary || '#111827';
+            var tp = c.textPrimary || '#ffffff';
+            var ts = c.textSecondary || '#9ca3af';
+            var style = document.getElementById('dynamicColors');
+            if (!style) { style = document.createElement('style'); style.id = 'dynamicColors'; document.head.appendChild(style); }
+            style.textContent = `
+                :root { --accent: ${a}; --accent-light: ${al}; --accent-dark: ${ad}; --bg1: ${bg1}; --bg2: ${bg2}; --tp: ${tp}; --ts: ${ts}; }
+                /* Accent text */
+                .text-pink-400 { color: ${al} !important; }
+                .text-pink-500 { color: ${a} !important; }
+                .text-pink-300 { color: ${al} !important; }
+                /* Accent backgrounds */
+                .bg-pink-500 { background-color: ${a} !important; }
+                .bg-pink-600 { background-color: ${ad} !important; }
+                .bg-pink-400 { background-color: ${al} !important; }
+                /* Accent borders */
+                .border-pink-500 { border-color: ${a} !important; }
+                .border-pink-400 { border-color: ${al} !important; }
+                /* Gradients from/to/via */
+                .from-pink-500 { --tw-gradient-from: ${a} var(--tw-gradient-from-position); --tw-gradient-to: ${a}00 var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
+                .from-pink-600 { --tw-gradient-from: ${ad} var(--tw-gradient-from-position); --tw-gradient-to: ${ad}00 var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
+                .from-pink-400 { --tw-gradient-from: ${al} var(--tw-gradient-from-position); --tw-gradient-to: ${al}00 var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
+                .to-pink-500 { --tw-gradient-to: ${a} var(--tw-gradient-to-position) !important; }
+                .to-pink-400 { --tw-gradient-to: ${al} var(--tw-gradient-to-position) !important; }
+                .to-pink-600 { --tw-gradient-to: ${ad} var(--tw-gradient-to-position) !important; }
+                .via-pink-300, .via-pink-400 { --tw-gradient-via-position: 50%; --tw-gradient-to: ${al}00 var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), ${al} var(--tw-gradient-via-position), var(--tw-gradient-to) !important; }
+                .via-pink-500 { --tw-gradient-via-position: 50%; --tw-gradient-to: ${a}00 var(--tw-gradient-to-position); --tw-gradient-stops: var(--tw-gradient-from), ${a} var(--tw-gradient-via-position), var(--tw-gradient-to) !important; }
+                /* Opacity variants */
+                .border-pink-500\\/20, [class*="border-pink-500/"] { border-color: ${a} !important; }
+                .bg-pink-500\\/20, [class*="bg-pink-500/"] { background-color: color-mix(in srgb, ${a} 20%, transparent) !important; }
+                .bg-pink-600\\/20, [class*="bg-pink-600/"] { background-color: color-mix(in srgb, ${ad} 20%, transparent) !important; }
+                [class*="from-pink-600/"] { --tw-gradient-from: color-mix(in srgb, ${ad} 20%, transparent) !important; }
+                [class*="to-pink-500/"] { --tw-gradient-to: color-mix(in srgb, ${a} 10%, transparent) !important; }
+                [class*="via-pink-500/"] { --tw-gradient-stops: var(--tw-gradient-from), color-mix(in srgb, ${a} 10%, transparent), var(--tw-gradient-to) !important; }
+                /* Shadows */
+                .shadow-pink-500\\/20, [class*="shadow-pink-500/"] { --tw-shadow-color: ${a}33 !important; }
+                .shadow-pink-500\\/30, [class*="shadow-pink-500/30"] { --tw-shadow-color: ${a}4d !important; }
+                /* Hover states */
+                .hover\\:text-pink-400:hover { color: ${al} !important; }
+                .hover\\:text-pink-300:hover { color: ${al} !important; }
+                .hover\\:border-pink-500:hover, .hover\\:border-pink-500\\/60:hover { border-color: ${a} !important; }
+                .hover\\:bg-pink-500\\/20:hover { background-color: color-mix(in srgb, ${a} 20%, transparent) !important; }
+                .group:hover .group-hover\\:text-pink-300 { color: ${al} !important; }
+                /* Focus */
+                .focus\\:border-pink-500:focus { border-color: ${a} !important; }
+                /* Ring */
+                .ring-pink-500 { --tw-ring-color: ${a} !important; }
+                .focus\\:ring-pink-500:focus { --tw-ring-color: ${a} !important; }
+                /* Background */
+                body { background-color: ${bg1} !important; }
+                .bg-black\\/80, footer { background-color: color-mix(in srgb, ${bg1} 80%, transparent) !important; }
+                .from-gray-900\\/50 { --tw-gradient-from: color-mix(in srgb, ${bg2} 50%, transparent) !important; }
+                .to-black\\/50 { --tw-gradient-to: color-mix(in srgb, ${bg1} 50%, transparent) !important; }
+                /* Text colors */
+                .text-white { color: ${tp} !important; }
+                .text-gray-400, .text-gray-300 { color: ${ts} !important; }
+                /* Buttons */
+                .btn-ripple, .mobile-bar-rdv { background: linear-gradient(135deg, ${ad}, ${a}) !important; }
+                .btn-ripple:hover { box-shadow: 0 0 30px ${a}66 !important; }
+                /* Accent line on scroll */
+                .accent-line { background: linear-gradient(90deg, transparent, ${a}, transparent) !important; }
+                /* Mobile bottom bar */
+                .mobile-bar-contact { border-color: ${a} !important; color: ${al} !important; }
+                /* Nav active */
+                .nav-link.active { color: ${al} !important; }
+            `;
+        }
+
         function applyConfig() {
             const cfg = loadConfig();
             if (!cfg) return;
+
+            // Colors
+            applyColors(cfg.colors);
 
             // SEO
             if (cfg.seo?.title) document.getElementById('pageTitle').textContent = cfg.seo.title;
