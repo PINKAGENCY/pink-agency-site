@@ -10,9 +10,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cqurzyjceftqkzbikrmt.supabase.co" crossorigin>
+    <link rel="preconnect" href="https://i.imgur.com" crossorigin>
+    <link rel="dns-prefetch" href="https://creer-societe-usa.com">
+    <link rel="dns-prefetch" href="https://www.1001web.fr">
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <style>
         body { font-family: 'Exo 2', sans-serif; }
         html { scroll-behavior: smooth; }
@@ -261,7 +263,7 @@
                 <a href="#contact" class="bg-gradient-to-r from-pink-600 to-pink-500 px-6 py-2 rounded-full hover:shadow-lg hover:shadow-pink-500/50 transition-all duration-300 flex items-center gap-2" id="navCta"></a>
                 <a href="#" id="navRdvBtn" class="btn-ripple btn-ripple-sm btn-ripple-animated" onclick="createRipple(event)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Prendre un rendez-vous</a>
             </nav>
-            <button id="menuToggle" class="lg:hidden text-white text-2xl z-[57] absolute right-4 sm:right-6">☰</button>
+            <button id="menuToggle" class="lg:hidden text-white text-2xl z-[57] absolute right-4 sm:right-6" aria-label="Ouvrir le menu">☰</button>
         </div>
     </header>
 
@@ -273,7 +275,7 @@
                 <img src="https://i.imgur.com/DS3yaqU.png" alt="Logo" class="h-9 w-auto" id="mobileMenuLogo" width="36" height="36" loading="lazy" decoding="async">
                 <span class="text-lg font-bold bg-gradient-to-r from-pink-500 to-white bg-clip-text text-transparent">PINK AGENCY</span>
             </div>
-            <button id="mobileMenuClose" class="text-gray-400 hover:text-pink-400 transition-colors p-1">
+            <button id="mobileMenuClose" class="text-gray-400 hover:text-pink-400 transition-colors p-1" aria-label="Fermer le menu">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
         </div>
@@ -309,7 +311,7 @@
 
     <!-- Hero Section -->
     <section id="home" class="relative min-h-screen flex items-center justify-center px-4 sm:px-6 pt-20 pb-16 overflow-visible">
-        <div class="text-center max-w-5xl mx-auto" id="heroContent">
+        <div class="text-center max-w-5xl mx-auto" id="heroContent" style="min-height:60vh;">
             <div class="mb-8 slide-in-left">
                 <div class="w-32 h-32 sm:w-40 sm:h-40 mx-auto flex items-center justify-center">
                     <img id="heroLogo" src="https://i.imgur.com/DS3yaqU.png" alt="Pink Agency" class="w-full h-full object-contain" width="160" height="160" decoding="async" style="filter: drop-shadow(0 0 30px rgba(236, 72, 153, 0.5));">
@@ -516,7 +518,10 @@
         const SUPABASE_URL = 'https://cqurzyjceftqkzbikrmt.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxdXJ6eWpjZWZ0cWt6Ymlrcm10Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTc3ODksImV4cCI6MjA4NjczMzc4OX0.k8DFzLeQgDJnPDq_V78RqirQpFyAScilFMingQVX3r4';
         let supabaseClient = null;
-        try { supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch(e) { console.error('Supabase init failed:', e); }
+        function initSupabase() {
+            try { supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); } catch(e) {}
+        }
+        if (window.supabase) { initSupabase(); }
 
         function loadConfig() {
             // Check URL hash for config from admin panel (Firefox file:// fix)
@@ -844,20 +849,41 @@
         }
 
         // ======================== INIT ========================
-        // First apply localStorage/hash config or defaults immediately
+        // First apply localStorage/hash config or defaults immediately (instant)
         const cfg = loadConfig();
         if (cfg) {
             applyConfig();
         } else {
             applyDefaults();
         }
-        // Then try Supabase (async) and update if newer data exists
-        loadConfigFromSupabase().then(cloudCfg => {
-            if (cloudCfg) {
-                localStorage.setItem('pinkAgencyConfig', JSON.stringify(cloudCfg));
-                applyConfig();
+        // Then load Supabase script dynamically (non-blocking) and fetch cloud config
+        function loadSupabaseAsync() {
+            if (window.supabase) {
+                initSupabase();
+                loadConfigFromSupabase().then(cloudCfg => {
+                    if (cloudCfg) {
+                        localStorage.setItem('pinkAgencyConfig', JSON.stringify(cloudCfg));
+                        applyConfig();
+                    }
+                });
+                return;
             }
-        });
+            var s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+            s.onload = function() {
+                initSupabase();
+                loadConfigFromSupabase().then(cloudCfg => {
+                    if (cloudCfg) {
+                        localStorage.setItem('pinkAgencyConfig', JSON.stringify(cloudCfg));
+                        applyConfig();
+                    }
+                });
+            };
+            document.head.appendChild(s);
+        }
+        // Defer Supabase loading until after first paint
+        if (document.readyState === 'complete') { loadSupabaseAsync(); }
+        else { window.addEventListener('load', loadSupabaseAsync); }
 
         // Menu mobile (slide panel)
         const menuToggle = document.getElementById('menuToggle');
@@ -914,13 +940,14 @@
 
         // Canvas constellation
         const canvas = document.getElementById('constellationCanvas');
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', {alpha: false});
+        var resizeTimer;
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         }
         resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('resize', function() { clearTimeout(resizeTimer); resizeTimer = setTimeout(resizeCanvas, 150); }, {passive: true});
 
         const stars = [];
         for (let i = 0; i < 50; i++) {
